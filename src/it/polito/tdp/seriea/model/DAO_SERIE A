@@ -1,0 +1,838 @@
+
+
+	// ------------------>  DBConnect  <---------------
+	
+	/**
+	 Togli password=root nell'URL!!! 
+	  */
+	
+	// ------------------>  SerieADAO  <---------------
+	
+	/**
+	 Metodi nel SerieADAO!
+	 
+	 --> Lista di tuttte le stagioni
+	 --> Lista di tutte le squadre
+	 --> Mappa di tutte le squadre
+	 --> Lista di squadre per stagione
+	 --> Mappa di squadre per stagione
+	 
+	 --> Lista di tutte le partite giocate in casa da una squadra in una stagione
+	 --> Lista di tutte le partite giocate in trasferta da una squadra in una stagione
+	 --> Lista di tutte le partite giocate da una squadra in una stagione
+	 --> Lista di tutte le partite giocate in una stagione
+	 --> Lista di tutte le partite
+	 
+	 --> Lista di partite con vittoria della HomeTeam in una stagione
+	 --> Lista di partite con pareggio in una stagione
+	 --> Lista di partite con vittoria della AwayTeam in una stagione
+	 
+	 --> Lista di partite OVER 2,5 in una stagione
+	 
+	 --> Integer numero di partite vinte da una squadra in una stagione
+	 --> Integer numero di partite pareggiate da una squadra in una stagione
+	 --> Integer numero di partite perse da una squadra in una stagione
+	 
+	 --> Integer numero di goal fatti da una squadra nelle partite in casa in una stagione
+	 --> Integer numero di goal fatti da una squadra nelle partite in trasferta in una stagione
+	 
+	 --> Mappa <Team, tot Goal del Team in casa> ordinata per numero Goal decrescente, data una stagione
+	 --> Mappa <Team, tot Goal del Team in trasferta> ordinata per numero Goal decrescente, data una stagione
+	 --> Mappa <Team, tot Goal> in una stagione (nel TestDAO)
+	 
+	( Map<Team, Integer> mappaGoalH = dao.ListaGoalHomeInSeasonDESC(s, mapSquadre);
+		 Map<Team, Integer> mappaGoalA = dao.ListaGoalAwayInSeasonDESC(s, mapSquadre);
+		 
+		 Map<Team, Integer> mappaGoal = new HashMap<Team, Integer>();
+		
+		 for(Team t1 : mappaGoalH.keySet())
+			 for(Team t2 : mappaGoalA.keySet()){
+				 if(t1.equals(t2))
+					 mappaGoal.put(t1, mappaGoalH.get(t1)+mappaGoalA.get(t2));
+			 }
+		 		 
+		 System.out.println(mappaGoal); )
+	 
+	    */
+
+	public List<Match> getPartiteByHomeTeam(Season stagione,Team homeTeam, Map<String, Team> mapSquadre) {	}
+	public List<Match> getPartiteByAwayTeam(Season stagione,Team awayTeam, Map<String, Team> mapSquadre) {}	
+	public List<Match> getPartiteBySeason(Season stagione, Map<String, Team> mapSquadre) {	}
+	public List<Match> getPartiteOVERBySeason(Season stagione, Map<String, Team> mapSquadre) {	}
+	public List<Match> getPartiteByTeam(Season stagione,Team team, Map<String, Team> mapSquadre) {	}
+	public Integer listNumeroPartiteVinteDaTeam(Season stagione,Team team, Map<String, Team> mapSquadre) {}
+	public List<Team> listTeamsforSeason(Season s) {}
+	public Map<String,Team> MapTeamsForSeason(Season s) {}
+	public Integer GOALTeamHomeInStagione(Season stagione,Team team, Map<String, Team> mapSquadre) {	}
+	public Map<Team, Integer> ListaGoalHomeInSeasonDESC(Season stagione, Map<String, Team> mapSquadre) {	}
+	public Map<Team, Integer> ListaGoalAwayInSeasonDESC(Season stagione, Map<String, Team> mapSquadre) {	}
+
+		 
+-------------------------------------------------------------------------------------------
+ * @return lista di tutte le stagioni 
+	 */
+	public List<Season> listSeasons() {
+		String sql = "SELECT season, description FROM seasons" ;
+		
+		List<Season> seasons = new ArrayList<>() ;
+		Connection conn = DBConnect.getConnection() ;
+		try {
+			PreparedStatement st = conn.prepareStatement(sql) ;
+			ResultSet res = st.executeQuery() ;
+			while(res.next()) {
+				seasons.add( new Season(res.getInt("season"), res.getString("description"))) ;
+			}	
+			conn.close();
+			return seasons ;
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null ;
+		}
+	}
+	
+	/**
+	 * @return lista di tutte le squadre
+	 */
+	public List<Team> listTeams() {
+		String sql = "SELECT team FROM teams" ;
+		List<Team> teams = new ArrayList<>() ;
+		Connection conn = DBConnect.getConnection() ;	
+		try {
+			PreparedStatement st = conn.prepareStatement(sql) ;
+			ResultSet res = st.executeQuery() ;
+			while(res.next()) {
+				teams.add( new Team(res.getString("team"))) ;
+			}
+			conn.close();
+			return teams ;
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null ;
+		}
+	}
+	
+	/** 
+	 * @return mappa di tutte le squadre
+	 */
+	public Map<String,Team> MapTeams() {
+		String sql = "SELECT distinct HomeTeam FROM matches" ;
+		Map<String,Team> mapTeam = new HashMap<String,Team>() ;
+		Connection conn = DBConnect.getConnection() ;
+		
+		try {
+			PreparedStatement st = conn.prepareStatement(sql) ;
+			
+			ResultSet res = st.executeQuery() ;
+			
+			while(res.next()) {
+				mapTeam.put( res.getString("HomeTeam"),new Team(res.getString("HomeTeam"))) ;
+			}
+			
+			conn.close();
+			return mapTeam ;
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null ;
+		}
+	}
+	
+	/** 
+	 * @return lista delle squadre per stagione
+	 * @param s stagione
+	 */
+	public List<Team> listTeamsforSeason(Season s) {
+		String sql = "SELECT DISTINCT HomeTeam FROM matches Where season=?" ;	
+		List<Team> teamForSeason = new ArrayList<>() ;
+		Connection conn = DBConnect.getConnection() ;
+		
+		try {
+			PreparedStatement st = conn.prepareStatement(sql) ;
+			st.setInt(1, s.getSeason());
+			ResultSet res = st.executeQuery() ;
+			while(res.next()) {
+				teamForSeason.add( new Team(res.getString("HomeTeam"))) ;
+			}	
+			conn.close();
+			return teamForSeason ;
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null ;
+		}
+	}
+	
+	/** 
+	 * @return mappa delle squadre per stagione
+	 * @param s stagione
+	 */
+	public Map<String,Team> MapTeamsForSeason(Season s) {
+		String sql = "SELECT distinct HomeTeam FROM matches WHERE Season=?" ;
+		Map<String,Team> mapTeamForSeason = new HashMap<String,Team>() ;
+		Connection conn = DBConnect.getConnection() ;
+		
+		try {
+			PreparedStatement st = conn.prepareStatement(sql) ;
+			
+			st.setInt(1, s.getSeason());
+			
+			ResultSet res = st.executeQuery() ;
+			
+			while(res.next()) {
+				mapTeamForSeason.put( res.getString("HomeTeam"),new Team(res.getString("HomeTeam"))) ;
+			}
+			
+			conn.close();
+			return mapTeamForSeason ;
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null ;
+		}
+	}
+		
+	/**
+	 * @return lista partite giocate in @param stagione da @param Team
+	 * @param mapSquadre mappa delle squadre  */
+	public List<Match> getPartiteByTeam(Season stagione,Team Team, Map<String, Team> mapSquadre) {
+		
+		String sql = "SELECT * FROM matches "+
+	                 "WHERE season=? AND (HomeTeam=? OR AwayTeam =?) "  ;
+		List<Match> matches = new ArrayList<>() ;
+		Connection conn = DBConnect.getConnection() ;
+		
+		try {
+			PreparedStatement st = conn.prepareStatement(sql) ;
+			st.setInt(1, stagione.getSeason());
+			st.setString(2, Team.getTeam());
+			st.setString(3, Team.getTeam());
+			ResultSet res = st.executeQuery() ;
+			
+			while(res.next()) {
+				//Costruttore completo
+				matches.add(new Match(res.getInt("match_id"), stagione, res.getString("div"), res.getDate("date").toLocalDate(), mapSquadre.get(res.getString("HomeTeam")), 
+						                mapSquadre.get(res.getString("AwayTeam")), res.getInt("fthg"),  res.getInt("ftag"), res.getString("ftr"),  res.getInt("hTHG"),  
+						                res.getInt("hTAG"), res.getString("hTR"), res.getInt("hS"),  res.getInt("aS"),  res.getInt("hST"),  res.getInt("aST"), res.getInt("hF"),  res.getInt("aF"),  
+						                res.getInt("hC"),  res.getInt("aC"),  res.getInt("hY"),  res.getInt("aY"), res.getInt("hR"),  res.getInt("aR")));
+				//Costruttore ridotto
+				/*matches.add( new Match(res.getInt("match_id"), stagione, mapSquadre.get(res.getString("HomeTeam")), 
+									  mapSquadre.get(res.getString("AwayTeam")), res.getString("Ftr")));*/
+			}
+			conn.close();
+			return matches ;
+		
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null ;
+		}
+	}
+	
+	/**
+	 * @return lista partite giocate in @param stagione
+	 * @param mapSquadre mappa delle squadre  */
+	public List<Match> getMatchesForSeason(Season stagione, Map<String, Team> mapSquadre) {
+		
+		String sql = "SELECT * FROM matches "+
+	                 "WHERE season=? "  ;
+		List<Match> matches = new ArrayList<>() ;
+		Connection conn = DBConnect.getConnection() ;
+		
+		try {
+			PreparedStatement st = conn.prepareStatement(sql) ;
+			st.setInt(1, stagione.getSeason());
+			ResultSet res = st.executeQuery() ;
+			
+			while(res.next()) {
+				//Costruttore completo
+				matches.add(new Match(res.getInt("match_id"), stagione, res.getString("div"), res.getDate("date").toLocalDate(), mapSquadre.get(res.getString("HomeTeam")), 
+						                mapSquadre.get(res.getString("AwayTeam")), res.getInt("fthg"),  res.getInt("ftag"), res.getString("ftr"),  res.getInt("hTHG"),  
+						                res.getInt("hTAG"), res.getString("hTR"), res.getInt("hS"),  res.getInt("aS"),  res.getInt("hST"),  res.getInt("aST"), res.getInt("hF"),  res.getInt("aF"),  
+						                res.getInt("hC"),  res.getInt("aC"),  res.getInt("hY"),  res.getInt("aY"), res.getInt("hR"),  res.getInt("aR")));
+				//Costruttore ridotto
+				/*matches.add( new Match(res.getInt("match_id"), stagione, mapSquadre.get(res.getString("HomeTeam")), 
+									  mapSquadre.get(res.getString("AwayTeam")), res.getString("Ftr")));*/
+			}
+			conn.close();
+			return matches ;
+		
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null ;
+		}
+	}
+	
+
+	 * @return lista partite giocate in casa in @param stagione da @param homeTeam
+	 * @param mapSquadre mappa delle squadre
+	 * 
+	 */
+	public List<Match> getPartiteByHomeTeam(Season stagione,Team homeTeam, Map<String, Team> mapSquadre) {
+		
+		String sql = "select * "+
+	               "from matches "+
+	               "where season=? "+ 
+	               "and HomeTeam=? "  ;
+		List<Match> matchHome = new ArrayList<>() ;
+		Connection conn = DBConnect.getConnection() ;
+		
+		try {
+			PreparedStatement st = conn.prepareStatement(sql) ;
+			st.setInt(1, stagione.getSeason());
+			st.setString(2, homeTeam.getTeam());
+			
+			ResultSet res = st.executeQuery() ;
+			
+			while(res.next()) {
+				//Costruttore completo
+				matchHome.add(new Match(res.getInt("match_id"), stagione, res.getString("div"), res.getDate("date").toLocalDate(), homeTeam, mapSquadre.get(res.getString("AwayTeam")), 
+						                res.getInt("fthg"),  res.getInt("ftag"), res.getString("ftr"),  res.getInt("hTHG"),  res.getInt("hTAG"), res.getString("hTR"), 
+						                res.getInt("hS"),  res.getInt("aS"),  res.getInt("hST"),  res.getInt("aST"), 
+						                res.getInt("hF"),  res.getInt("aF"),  res.getInt("hC"),  res.getInt("aC"),  res.getInt("hY"),  res.getInt("aY"), 
+						                res.getInt("hR"),  res.getInt("aR")));
+				//Costruttore ridotto
+				/*matchHome.add( new Match(res.getInt("match_id"),
+									  stagione, homeTeam, 
+									  mapSquadre.get(res.getString("AwayTeam")), 
+									  res.getString("Ftr")));*/
+			}
+			
+			conn.close();
+			return matchHome ;
+		
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null ;
+		}
+	}
+	
+	/**
+	 * @return lista partite giocate in trasferta in @param stagione da @param awayTeam
+	 * @param mapSquadre mappa delle squadre
+	 * 
+	 */
+	public List<Match> getPartiteByAwayTeam(Season stagione,Team awayTeam, Map<String, Team> mapSquadre) {
+		
+		String sql = "select * "+
+	               "from matches "+
+	               "where season=? "+ 
+	               "and AwayTeam=? "  ;
+		List<Match> matchAway = new ArrayList<>() ;
+		Connection conn = DBConnect.getConnection() ;
+		
+		try {
+			PreparedStatement st = conn.prepareStatement(sql) ;
+			st.setInt(1, stagione.getSeason());
+			st.setString(2, awayTeam.getTeam());
+			
+			ResultSet res = st.executeQuery() ;
+			
+			while(res.next()) {
+				//Costruttore completo
+				matchAway.add(new Match(res.getInt("match_id"), stagione, res.getString("div"), res.getDate("date").toLocalDate(), mapSquadre.get(res.getString("HomeTeam")), 
+						                awayTeam, res.getInt("fthg"),  res.getInt("ftag"), res.getString("ftr"),  res.getInt("hTHG"),  
+						                res.getInt("hTAG"), res.getString("hTR"), res.getInt("hS"),  res.getInt("aS"),  res.getInt("hST"),  res.getInt("aST"), res.getInt("hF"),  res.getInt("aF"),  
+						                res.getInt("hC"),  res.getInt("aC"),  res.getInt("hY"),  res.getInt("aY"), res.getInt("hR"),  res.getInt("aR")));
+				//Costruttore ridotto
+				/*matchAway.add( new Match(res.getInt("match_id"),
+									  stagione, 
+									  mapSquadre.get(res.getString("HomeTeam")), 
+									  awayTeam,
+									  res.getString("Ftr")));*/
+			}
+			
+			conn.close();
+			return matchAway ;
+		
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null ;
+		}
+	}
+	
+	/**
+	 * @return lista partite giocate in @param stagione da @param Team
+	 * @param mapSquadre mappa delle squadre  */
+	public List<Match> getPartiteByTeam(Season stagione,Team Team, Map<String, Team> mapSquadre) {
+		
+		String sql = "SELECT * FROM matches "+
+	                 "WHERE season=? AND (HomeTeam=? OR AwayTeam =?) "  ;
+		List<Match> matches = new ArrayList<>() ;
+		Connection conn = DBConnect.getConnection() ;
+		
+		try {
+			PreparedStatement st = conn.prepareStatement(sql) ;
+			st.setInt(1, stagione.getSeason());
+			st.setString(2, Team.getTeam());
+			st.setString(3, Team.getTeam());
+			ResultSet res = st.executeQuery() ;
+			
+			while(res.next()) {
+				//Costruttore completo
+				matches.add(new Match(res.getInt("match_id"), stagione, res.getString("div"), res.getDate("date").toLocalDate(), mapSquadre.get(res.getString("HomeTeam")), 
+						                mapSquadre.get(res.getString("AwayTeam")), res.getInt("fthg"),  res.getInt("ftag"), res.getString("ftr"),  res.getInt("hTHG"),  
+						                res.getInt("hTAG"), res.getString("hTR"), res.getInt("hS"),  res.getInt("aS"),  res.getInt("hST"),  res.getInt("aST"), res.getInt("hF"),  res.getInt("aF"),  
+						                res.getInt("hC"),  res.getInt("aC"),  res.getInt("hY"),  res.getInt("aY"), res.getInt("hR"),  res.getInt("aR")));
+				//Costruttore ridotto
+				/*matches.add( new Match(res.getInt("match_id"), stagione, mapSquadre.get(res.getString("HomeTeam")), 
+									  mapSquadre.get(res.getString("AwayTeam")), res.getString("Ftr")));*/
+			}
+			conn.close();
+			return matches ;
+		
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null ;
+		}
+	}
+	
+	/**
+	 * @return lista partite giocate in @param stagione
+	 * @param mapSquadre mappa delle squadre  */
+	public List<Match> getPartiteForSeason(Season stagione, Map<String, Team> mapSquadre) {
+		
+		String sql = "SELECT * FROM matches "+
+	                 "WHERE season=? "  ;
+		List<Match> matches = new ArrayList<>() ;
+		Connection conn = DBConnect.getConnection() ;
+		
+		try {
+			PreparedStatement st = conn.prepareStatement(sql) ;
+			st.setInt(1, stagione.getSeason());
+			ResultSet res = st.executeQuery() ;
+			
+			while(res.next()) {
+				//Costruttore completo
+				matches.add(new Match(res.getInt("match_id"), stagione, res.getString("div"), res.getDate("date").toLocalDate(), mapSquadre.get(res.getString("HomeTeam")), 
+						                mapSquadre.get(res.getString("AwayTeam")), res.getInt("fthg"),  res.getInt("ftag"), res.getString("ftr"),  res.getInt("hTHG"),  
+						                res.getInt("hTAG"), res.getString("hTR"), res.getInt("hS"),  res.getInt("aS"),  res.getInt("hST"),  res.getInt("aST"), res.getInt("hF"),  res.getInt("aF"),  
+						                res.getInt("hC"),  res.getInt("aC"),  res.getInt("hY"),  res.getInt("aY"), res.getInt("hR"),  res.getInt("aR")));
+				//Costruttore ridotto
+				/*matches.add( new Match(res.getInt("match_id"), stagione, mapSquadre.get(res.getString("HomeTeam")), 
+									  mapSquadre.get(res.getString("AwayTeam")), res.getString("Ftr")));*/
+			}
+			conn.close();
+			return matches ;
+		
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null ;
+		}
+	}
+	
+	/**
+	 * @return lista partite giocate 
+	 * @param mapSquadre mappa delle squadre @param mapSeasons  */
+	public List<Match> getPartite(Map <Integer, Season> mapStagioni, Map<String, Team> mapSquadre) {
+		
+		String sql = "SELECT * FROM matches ";
+		List<Match> matches = new ArrayList<>() ;
+		Connection conn = DBConnect.getConnection() ;
+		
+		try {
+			PreparedStatement st = conn.prepareStatement(sql) ;
+			ResultSet res = st.executeQuery() ;
+			
+			while(res.next()) {
+				//Costruttore completo
+				matches.add(new Match(res.getInt("match_id"), mapStagioni.get(res.getInt("season")), res.getString("div"), res.getDate("date").toLocalDate(), mapSquadre.get(res.getString("HomeTeam")), 
+						                mapSquadre.get(res.getString("AwayTeam")), res.getInt("fthg"),  res.getInt("ftag"), res.getString("ftr"),  res.getInt("hTHG"),  
+						                res.getInt("hTAG"), res.getString("hTR"), res.getInt("hS"),  res.getInt("aS"),  res.getInt("hST"),  res.getInt("aST"), res.getInt("hF"),  res.getInt("aF"),  
+						                res.getInt("hC"),  res.getInt("aC"),  res.getInt("hY"),  res.getInt("aY"), res.getInt("hR"),  res.getInt("aR")));
+				//Costruttore ridotto
+				/*matches.add( new Match(res.getInt("match_id"), mapStagioni.get(res.getInt("season")), mapSquadre.get(res.getString("HomeTeam")), 
+									  mapSquadre.get(res.getString("AwayTeam")), res.getString("Ftr")));*/
+			}
+			conn.close();
+			return matches ;
+		
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null ;
+		}
+	}
+	
+	/**
+	 * @return lista partite in @param stagione con vittoria della squadra in casa
+	 * @param mapSquadre
+	 * 
+	 */
+	public List<Match> getPartiteHomeWinBySeason(Season stagione, Map<String, Team> mapSquadre) {
+		
+	  String sql = "SELECT * FROM matches WHERE matches.Season = ? AND FTR = 'H' " ; //H = Team Home Win
+			
+			List<Match> matchesHTWin = new ArrayList<>() ;
+			Connection conn = DBConnect.getConnection() ;
+			
+			try {
+				PreparedStatement st = conn.prepareStatement(sql) ;
+				st.setInt(1, stagione.getSeason());
+				ResultSet res = st.executeQuery() ;
+				
+				while(res.next()) {
+					
+					//Costruttore completo
+					matchesHTWin.add(new Match(res.getInt("match_id"), stagione, res.getString("div"), res.getDate("date").toLocalDate(), mapSquadre.get(res.getString("HomeTeam")), 
+							                mapSquadre.get(res.getString("AwayTeam")), res.getInt("fthg"),  res.getInt("ftag"), res.getString("ftr"),  res.getInt("hTHG"),  
+							                res.getInt("hTAG"), res.getString("hTR"), res.getInt("hS"),  res.getInt("aS"),  res.getInt("hST"),  res.getInt("aST"), res.getInt("hF"),  res.getInt("aF"),  
+							                res.getInt("hC"),  res.getInt("aC"),  res.getInt("hY"),  res.getInt("aY"), res.getInt("hR"),  res.getInt("aR")));
+					//Costruttore ridotto
+					/*matchesHTWin.add( new Match(res.getInt("match_id"), stagione, mapSquadre.get(res.getString("HomeTeam")), 
+										  mapSquadre.get(res.getString("AwayTeam")), res.getString("Ftr")));*/
+					
+				}
+				conn.close();
+				return matchesHTWin ;
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return null ;
+			}
+		}
+	
+	/**
+	 * @return lista partite in @param stagione con pareggio
+	 * @param mapSquadre
+	 * 
+	 */
+	public List<Match> getPartiteDrawBySeason(Season stagione, Map<String, Team> mapSquadre) {
+		
+	  String sql = "SELECT * FROM matches WHERE matches.Season = ? AND FTR = 'D' " ; //D = Draw
+			
+			List<Match> matchesDraw = new ArrayList<>() ;
+			Connection conn = DBConnect.getConnection() ;
+			
+			try {
+				PreparedStatement st = conn.prepareStatement(sql) ;
+				st.setInt(1, stagione.getSeason());
+				ResultSet res = st.executeQuery() ;
+				
+				while(res.next()) {
+					
+					//Costruttore completo
+					matchesDraw.add(new Match(res.getInt("match_id"), stagione, res.getString("div"), res.getDate("date").toLocalDate(), mapSquadre.get(res.getString("HomeTeam")), 
+							                mapSquadre.get(res.getString("AwayTeam")), res.getInt("fthg"),  res.getInt("ftag"), res.getString("ftr"),  res.getInt("hTHG"),  
+							                res.getInt("hTAG"), res.getString("hTR"), res.getInt("hS"),  res.getInt("aS"),  res.getInt("hST"),  res.getInt("aST"), res.getInt("hF"),  res.getInt("aF"),  
+							                res.getInt("hC"),  res.getInt("aC"),  res.getInt("hY"),  res.getInt("aY"), res.getInt("hR"),  res.getInt("aR")));
+					//Costruttore ridotto
+					/*matchesDraw.add( new Match(res.getInt("match_id"), stagione, mapSquadre.get(res.getString("HomeTeam")), 
+										  mapSquadre.get(res.getString("AwayTeam")), res.getString("Ftr")));*/
+					
+				}
+				conn.close();
+				return matchesDraw ;
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return null ;
+			}
+		}
+
+	/**
+	 * @return lista partite in @param stagione con vittoria della squadra in trasferta
+	 * @param mapSquadre
+	 * 
+	 */
+	public List<Match> getPartiteAwayWinBySeason(Season stagione, Map<String, Team> mapSquadre) {
+		
+	  String sql = "SELECT * FROM matches WHERE matches.Season = ? AND FTR = 'A' " ;  //A = Team Away Win
+			
+			List<Match> matchesATWin = new ArrayList<>() ;
+			Connection conn = DBConnect.getConnection() ;
+			
+			try {
+				PreparedStatement st = conn.prepareStatement(sql) ;
+				st.setInt(1, stagione.getSeason());
+				ResultSet res = st.executeQuery() ;
+				
+				while(res.next()) {
+					
+					//Costruttore completo
+					matchesATWin.add(new Match(res.getInt("match_id"), stagione, res.getString("div"), res.getDate("date").toLocalDate(), mapSquadre.get(res.getString("HomeTeam")), 
+							                mapSquadre.get(res.getString("AwayTeam")), res.getInt("fthg"),  res.getInt("ftag"), res.getString("ftr"),  res.getInt("hTHG"),  
+							                res.getInt("hTAG"), res.getString("hTR"), res.getInt("hS"),  res.getInt("aS"),  res.getInt("hST"),  res.getInt("aST"), res.getInt("hF"),  res.getInt("aF"),  
+							                res.getInt("hC"),  res.getInt("aC"),  res.getInt("hY"),  res.getInt("aY"), res.getInt("hR"),  res.getInt("aR")));
+					//Costruttore ridotto
+					/*matchesATWin.add( new Match(res.getInt("match_id"), stagione, mapSquadre.get(res.getString("HomeTeam")), 
+										  mapSquadre.get(res.getString("AwayTeam")), res.getString("Ftr")));*/
+					
+				}
+				conn.close();
+				return matchesATWin ;
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return null ;
+			}
+		}
+	
+	/**
+	 * @return lista partite in @param stagione con OVER 2,5
+	 * @param mapSquadre
+	 * 
+	 */
+	public List<Match> getPartiteOVERBySeason(Season stagione, Map<String, Team> mapSquadre) {
+		
+	  String sql = "SELECT * FROM matches WHERE matches.Season = ? " +
+	               "AND ((matches.FTHG) + (matches.FTAG)) > 2" ;
+			
+			List<Match> matchesOVER = new ArrayList<>() ;
+			Connection conn = DBConnect.getConnection() ;
+			
+			try {
+				PreparedStatement st = conn.prepareStatement(sql) ;
+				st.setInt(1, stagione.getSeason());
+				ResultSet res = st.executeQuery() ;
+				
+				while(res.next()) {
+
+					//Costruttore completo
+					matchesOVER.add(new Match(res.getInt("match_id"), stagione, res.getString("div"), res.getDate("date").toLocalDate(), mapSquadre.get(res.getString("HomeTeam")), 
+							                mapSquadre.get(res.getString("AwayTeam")), res.getInt("fthg"),  res.getInt("ftag"), res.getString("ftr"),  res.getInt("hTHG"),  
+							                res.getInt("hTAG"), res.getString("hTR"), res.getInt("hS"),  res.getInt("aS"),  res.getInt("hST"),  res.getInt("aST"), res.getInt("hF"),  res.getInt("aF"),  
+							                res.getInt("hC"),  res.getInt("aC"),  res.getInt("hY"),  res.getInt("aY"), res.getInt("hR"),  res.getInt("aR")));
+					//Costruttore ridotto
+					/*matchesOVER.add( new Match(res.getInt("match_id"), stagione, mapSquadre.get(res.getString("HomeTeam")), 
+										  mapSquadre.get(res.getString("AwayTeam")), res.getString("Ftr")));*/
+					
+				}
+				conn.close();
+				return matchesOVER ;
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return null ;
+			}
+		}
+
+	/**
+	 * @return numero di partite vinte in @param stagione da @param team
+	 * @param mapSquadre 
+	 */
+	public Integer listNumeroPartiteVinteDaTeam(Season stagione,Team team, Map<String, Team> mapSquadre) {
+		String sql = "SELECT COUNT(*) AS counter FROM matches m WHERE m.season = ? " +
+                     "AND ( (m.hometeam = ? AND m.FTR = 'H') OR (m.awayteam = ? AND m.FTR = 'A')) ";
+		
+			int result = 0 ;
+			Connection conn = DBConnect.getConnection() ;
+			
+			try {
+				PreparedStatement st = conn.prepareStatement(sql) ;
+				st.setInt(1, stagione.getSeason());
+				st.setString(2, team.getTeam());
+				st.setString(3, team.getTeam());
+				
+				ResultSet res = st.executeQuery() ;
+				
+				while(res.next()) {
+					result = new Integer(res.getInt("counter"));
+					
+				}
+				conn.close();
+				return result ;
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	/**
+	 * @return numero di partite pareggiate in @param stagione da @param team
+	 * @param mapSquadre 
+	 */
+	public Integer listNumeroPartitePareggiateDaTeam(Season stagione,Team team, Map<String, Team> mapSquadre) {
+		
+		String sql = "SELECT COUNT(*) AS counter FROM matches m WHERE m.season = ? " +
+                     "AND (m.hometeam = ? OR m.awayteam = ?) AND m.FTR = 'D')) ";
+		
+			int result = 0 ;
+			Connection conn = DBConnect.getConnection() ;
+			
+			try {
+				PreparedStatement st = conn.prepareStatement(sql) ;
+				st.setInt(1, stagione.getSeason());
+				st.setString(2, team.getTeam());
+				st.setString(3, team.getTeam());
+				
+				ResultSet res = st.executeQuery() ;
+				
+				while(res.next()) {
+					result = new Integer(res.getInt("counter"));
+					
+				}
+				conn.close();
+				return result ;
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	/**
+	 * @return numero di partite perse in @param stagione da @param team
+	 * @param mapSquadre 
+	 */
+	public Integer listNumeroPartitePerseDaTeam(Season stagione,Team team, Map<String, Team> mapSquadre) {
+		
+		String sql = "SELECT COUNT(*) AS counter FROM matches m WHERE m.season = ? " +
+                     "AND ( (m.hometeam = ? AND m.FTR = 'A') OR (m.awayteam = ? AND m.FTR = 'H')) ";
+		
+			int result = 0 ;
+			Connection conn = DBConnect.getConnection() ;
+			
+			try {
+				PreparedStatement st = conn.prepareStatement(sql) ;
+				st.setInt(1, stagione.getSeason());
+				st.setString(2, team.getTeam());
+				st.setString(3, team.getTeam());
+				
+				ResultSet res = st.executeQuery() ;
+				
+				while(res.next()) {
+					result = new Integer(res.getInt("counter"));
+					
+				}
+				conn.close();
+				return result ;
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	/**
+	 * @return numero goal fatti da @param team nelle partite in casa in una @param stagione
+	 * @param mapSquadre
+	 */
+	public Integer GOALTeamHomeInStagione(Season stagione,Team team, Map<String, Team> mapSquadre) {
+			
+			String sql = "SELECT SUM(FTHG) AS sumGH FROM matches WHERE matches.Season = ? "+
+			"AND matches.HomeTeam = ? ";
+			
+				int result = 0 ;
+				Connection conn = DBConnect.getConnection() ;
+				
+				try {
+					PreparedStatement st = conn.prepareStatement(sql) ;
+					st.setInt(1, stagione.getSeason());
+					st.setString(2, team.getTeam());
+					ResultSet res = st.executeQuery() ;
+					
+					while(res.next()) {
+						result = new Integer(res.getInt("sumGH"));
+						
+					}
+					conn.close();
+					return result ;
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return null;
+			}
+		}
+	
+	/**
+	 * @return numero goal fatti da @param team nelle partite in trasferta in una @param stagione
+	 * @param mapSquadre
+	 */
+	public Integer GOALTeamAwayInStagione(Season stagione,Team team, Map<String, Team> mapSquadre) {
+			
+			String sql = "SELECT SUM(FTAG) AS sumGA FROM matches WHERE matches.Season = ? "+
+			               "AND matches.AwayTeam = ? ";
+			
+				int result = 0 ;
+				Connection conn = DBConnect.getConnection() ;
+				
+				try {
+					PreparedStatement st = conn.prepareStatement(sql) ;
+					st.setInt(1, stagione.getSeason());
+					st.setString(2, team.getTeam());
+					ResultSet res = st.executeQuery() ;
+					
+					while(res.next()) {
+						result = new Integer(res.getInt("sumGA"));
+						
+					}
+					conn.close();
+					return result ;
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return null;
+			}
+		}
+
+	/**
+	 * @return mappa <Team, GoalTeam in casa> ordinata in ordine decrescente per numero di Goal, in una @param stagione
+	 * @param mapSquadre
+	 */
+	public Map<Team, Integer> ListaGoalHomeInSeasonDESC(Season stagione, Map<String, Team> mapSquadre) {
+				
+				String sql = "SELECT hometeam, sum(fthg) AS sum FROM matches WHERE season=? GROUP BY hometeam ORDER BY sum(fthg) DESC"  ; //ASC
+				
+				Map<Team, Integer> mapGoalHome = new HashMap<Team, Integer>() ;
+				Connection conn = DBConnect.getConnection() ;
+				
+				try {
+					PreparedStatement st = conn.prepareStatement(sql) ;
+					st.setInt(1, stagione.getSeason());
+					
+					
+					ResultSet res = st.executeQuery() ;
+					
+					while(res.next()) {
+						mapGoalHome.put(mapSquadre.get(res.getString("homeTeam")), res.getInt("sum"));
+					}
+					
+					conn.close();
+					return mapGoalHome ;
+				
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					return null ;
+				}
+			}
+	
+	/**
+	 * @return mappa <Team, GoalTeam in trasferta> ordinata in ordine decrescente per numero di Goal, in una @param stagione
+	 * @param mapSquadre
+	 */
+	public Map<Team, Integer> ListaGoalAwayInSeasonDESC(Season stagione, Map<String, Team> mapSquadre) {
+				
+				String sql = "SELECT DISTINCT awayteam, sum(ftag) AS sum FROM matches WHERE season=? GROUP BY awayteam ORDER BY sum(ftag) DESC"  ; //ASC
+				
+				Map<Team, Integer> mapGoalAway = new HashMap<Team, Integer>() ;
+				Connection conn = DBConnect.getConnection() ;
+				
+				try {
+					PreparedStatement st = conn.prepareStatement(sql) ;
+					st.setInt(1, stagione.getSeason());
+					
+					
+					ResultSet res = st.executeQuery() ;
+					
+					while(res.next()) {
+						mapGoalAway.put(mapSquadre.get(res.getString("awayteam")), res.getInt("sum"));
+					}
+					
+					conn.close();
+					return mapGoalAway ;
+				
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					return null ;
+				}
+			}

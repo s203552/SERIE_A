@@ -1,0 +1,123 @@
+
+/**
+ * RICORSIONE 1  ------->  GET OTTIMO Airport di tutti le rotte
+ */
+		
+	//GET OTTIMO di tutti le gare
+		private List<Team> all;		
+		private Map<String,Integer> FantaTeam;
+		private Map<String,List<Team>> mapTeam;
+		private List<String> best2;
+		
+	//METODO FINALE
+		
+		public List<String> getOttimo(){
+			List<String> parziale=new ArrayList<>();
+			best2=new ArrayList<>();		
+			recursive(0,parziale);
+			return best2;
+		}
+
+	//RICORSIONE
+		
+		private void recursive(int livello, List<String> parziale) {
+			
+			all=this.getAllTeams(); //di tutti le gare
+			for(String s: parziale){
+				for(Team p:mapTeam.get(s)){
+					all.removeAll(Graphs.neighborListOf(graph, p));
+				}
+			}
+			if(best2.isEmpty()|| parziale.size()<best2.size()){				
+					best2.clear();
+					best2.addAll(parziale);
+					System.out.println(best2);
+				}		
+			for(String s:FantaTeam.keySet()){			
+				if(parziale.isEmpty() || s.compareTo(parziale.get(parziale.size()-1))>0){				
+					parziale.add(s);			
+					recursive(livello+1,parziale);			
+					parziale.remove(s);
+				}			
+			}		
+		}
+
+/**
+--------------------------------------------------------------
+ * RICORSIONE 
+*/		
+		
+		//metodo
+			private void scegli(List<DefaultWeightedEdge> parziale, int livello, List<DefaultWeightedEdge> best, Team squadra) {
+				
+				// lo svolgo sugli archi perchè se no non considero 
+				//alcune partite, in quanto la squadra svolge piu partite sia in casa che in trasferta
+				
+				if(parziale.size() > best.size()){ 	best.clear();             //se parziale >cammino MAX  -> sostituisco
+													best.addAll(parziale);
+													System.out.println(best.toString());} 
+				else{
+					  for(DefaultWeightedEdge e: graph.outgoingEdgesOf(squadra)){    //ARCHI USCENTI graph.outgoingEdgesOf
+						if(graph.getEdgeWeight(e)==1){
+							if(!parziale.contains(e))  
+										{ parziale.add(e);
+										scegli(parziale,livello+1,best,graph.getEdgeTarget(e));  //graph.getEdgeTarget 
+																								// LANCIA RICORSIONE sui team
+										parziale.remove(e);	}
+						 }
+					   }
+					}
+			}
+		//implementazione metodo	
+			public List<DefaultWeightedEdge> trovaSequenza(){
+				List<DefaultWeightedEdge> best=new ArrayList<DefaultWeightedEdge> ();
+				for( Team squadra: graph.vertexSet()){
+						List<DefaultWeightedEdge> parziale=new ArrayList<DefaultWeightedEdge>();
+						scegli(parziale,0,best,squadra);	
+				}
+				return best;
+			}
+
+			
+/**
+--------------------------------------------------------------
+ * RICORSIONE 3
+*/	
+					private List<Team> best;
+					private List<DefaultWeightedEdge> bestArchi;
+						
+					public List<Team> getLongestPath(){
+							List<DefaultWeightedEdge> parzialeArchi= new ArrayList<>();
+							bestArchi = new ArrayList<>();
+							best = new ArrayList<>();			
+							recursive(parzialeArchi);			
+							for(DefaultWeightedEdge edge: bestArchi){
+								best.add(graph.getEdgeSource(edge));
+							}		
+							best.add(graph.getEdgeTarget(bestArchi.get(bestArchi.size()-1)));	
+							System.out.println("best: "+best.toString());
+							return best;
+						}
+					
+					private void recursive(List<DefaultWeightedEdge> parzialeArchi) {
+							// condizione terminazione == tutte le possibili ==> termina da solo
+							//controllo se la dim di parziale è > best aggiorno best
+							//System.out.println(parzialeArchi.toString()+"\n");	
+									
+							if(parzialeArchi.size() >= bestArchi.size()){
+								bestArchi.clear();
+								bestArchi.addAll(parzialeArchi);
+								System.out.println("bestArchi: "+bestArchi.toString()+"\n");
+							}			
+							for(DefaultWeightedEdge edge : graph.edgeSet()){
+								if(graph.getEdgeWeight(edge)==1){
+									if(!parzialeArchi.contains(edge) && (parzialeArchi.size()==0 
+											|| graph.getEdgeTarget(parzialeArchi.get(parzialeArchi.size()-1)).equals(graph.getEdgeSource(edge)))){
+										parzialeArchi.add(edge);
+										recursive(parzialeArchi);
+										parzialeArchi.remove(edge);
+									}
+								}
+							}
+									
+						}
