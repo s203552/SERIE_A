@@ -1,0 +1,157 @@
+1) raggiungibili data Stagione e Team di partenza (dijkstra)
+2) raggiungibili da query data Airline
+3) tutti raggiungibili calcolando punti  data stagione
+4) CAMMINO MINIMO e TEMPO TOT CAMMINO 
+5) successori
+6) predecessori
+7) raggiungibili (visita in  profondità)---> breathfirstInterator
+8) numero di raggiungibili (visita in  profondità)
+9) BELLMANcalcolaPercorso(Team partenza)
+
+
+/*Si permetta all’utente di selezionare un team tra quelli raggiunti della stagione, e determinare
+ tutti gli altrin team da esso raggiungibili con viaggi di una o piU partite . L’elenco deve essere ordinato per
+ punti crescente  rispetto al team di partenza. */
+	 	 
+	 	public List<TeamPunteggio> getDestinations(Season season, Team start) {
+	
+	 			List<TeamPunteggio> list = new ArrayList<>();
+	 			for (Team end : this.getAllTeamsBySeason(season)) {
+	 				DijkstraShortestPath<Team, DefaultWeightedEdge> dsp = new DijkstraShortestPath<>(graph, start, end);
+	 				GraphPath<Team, DefaultWeightedEdge> p = dsp.getPath();
+	 				if (p != null) {
+	 				// p.getEdgeList().size() è il numero di partite da aggiungere dopo p.getWeight() e aggiungi un int nella classe
+	 					list.add(new TeamPunteggio(end, (int) p.getWeight()));    
+	 				}
+	 			}
+	 			//ordinato per punti crescente  rispetto al team di partenza
+	 			list.sort(new Comparator<TeamPunteggio>() {
+	 				@Override
+	 				public int compare(TeamPunteggio o1, TeamPunteggio o2) {
+	 					return Double.compare(o1.getPunteggio(), o2.getPunteggio());
+	 				}
+	 			});
+	 		return list;
+	 		}
+	 	 
+	 
+/**
+ * CAMMINO MINIMO e TEMPO TOT CAMMINO 
+ */
+	 		
+	 		public String calcolaPercorso(Team p, Team a) {
+	// 		this.creaGrafo();
+	 		String s="";
+	 		double tottime=0;
+	 		DijkstraShortestPath<Team, DefaultWeightedEdge> dsp = new DijkstraShortestPath<>(graph, p,a);
+	 		GraphPath<Team, DefaultWeightedEdge> path = dsp.getPath();
+	 			if(path == null)  return null;
+	 			List<Team> vertici = new ArrayList<>();
+	 			
+	 			tottime = ((path.getEdgeList().size()) * 30 -60) + path.getWeight();  //- StazP e StazA
+	
+	 			for(DefaultWeightedEdge e : path.getEdgeList()){
+	 				vertici.add(graph.getEdgeTarget(e));
+	 				}
+	 		s+= "Percorso: "+ vertici.toString() + "\n"+ "Tempo tot: " + tottime;	
+	 		System.out.println(s);
+	 		return s;
+	 		
+	 	}
+//SUCCESSORI 		
+	 	
+	 	public List<Team> trovaSucessori(Team s) {	
+	 			List<Team> successori = new ArrayList<Team>();
+	 			successori.addAll(Graphs.successorListOf(graph,s));
+	 						
+	 			return successori;
+	 		}
+
+//PREDECCESSORI
+	 	
+	 	public List<Team> trovaPredecessori(Team s) {
+	 			List<Team>predecessori = new ArrayList<Team>();
+	 			predecessori.addAll(Graphs.predecessorListOf(graph,s));
+	 			return predecessori;
+	 		}
+	 		
+	 	
+	 	
+	 	
+//	quanti e quali altri stati sono raggiungibili(attraverso uno o piu archi)
+	 	
+	 	List<Team> vicini = new ArrayList<Team>();
+	 		
+	 	public List<Team> getRaggiungibiliInAmpiezza(Team partenza)
+	 		{	
+	 			BreadthFirstIterator<Team, DefaultWeightedEdge> visita = 
+	 					new BreadthFirstIterator<Team, DefaultWeightedEdge>( this.graph, partenza);
+	 			
+	 			while(visita.hasNext()) //Finchè ogni nodo ha un successore
+	 			{
+	 				Team s = visita.next(); //Prendo il successore
+	 				vicini.add(s); //e lo metto nella lista
+	 			}
+	 			return vicini;
+	 		}
+	 	public int raggiungibili(){
+	 		return vicini.size();
+	 	}
+ 	
+ 	
+ 	
+ //BELLMAN---> UGUALE A disktra ma tiene conto peso negativo
+	 	
+	 	public String BELLMANcalcolaPercorso(Team partenza) {
+	 		String ritorno = new String();
+	 		
+	 		BellmanFordShortestPath<Team, DefaultWeightedEdge> bellman = 
+	 				new BellmanFordShortestPath<Team, DefaultWeightedEdge>(graph, partenza);
+	 		
+	 		Map<Team, Double> mappa = new HashMap();
+	 		
+	 		for (Team arrivo: graph.vertexSet()) {
+	 			if (!partenza.equals(arrivo)) {
+	 				double peso = bellman.getCost(arrivo);
+	 				mappa.put(arrivo, peso);
+	 			}
+	 		}
+	 		
+	 		for (Team f: mappa.keySet()) {
+	 			ritorno = ritorno + f.getTeam() + " = " + mappa.get(f)+ " \n" ;
+	 		}
+	 		
+	 		return ritorno;
+	 	}
+	 	
+	 	
+--------------------------------------
+
+
+//			System.out.println("-------------VISITE----------------------");			
+//			
+//			System.out.println("\n");
+//			List<TeamPunteggio> t= model.getDestinations(s, team);
+//		
+//			System.out.println(t);
+//			System.out.println(" \n----- successori------ \n");
+//			List<Team> ss= model.trovaSucessori(team);
+//			System.out.println(ss);
+//			
+//			System.out.println(" \n-------predeccessori------ \n ");
+//			List<Team> pp= model.trovaPredecessori(team);
+//			System.out.println(pp);
+//
+//			System.out.println(" \n------ calcolo percorso e il suo tempo-------  \n");
+//			System.out.println(model.calcolaPercorso(team, team2));
+//			
+//			System.out.println("\n -------Squadre che il eam ha affrontato in quella stagione------- \n");
+//			List<Team> te= model.getRaggiungibiliInAmpiezza(team);
+//			System.out.println(te);
+//			
+//			System.out.println("\n------- n raggiungibili------ \n");
+//			int i= model.raggiungibili();
+//			System.out.println(i);
+//			
+//			System.out.println("\n-------- percorso BELLMAN---> UGUALE A disktra ma tiene conto peso negativo------ \n");
+//			System.out.println(model.BELLMANcalcolaPercorso(team));

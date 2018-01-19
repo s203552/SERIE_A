@@ -1,11 +1,11 @@
  
  /**
-	 * GET BEST/WORST AIRPORT
+	 * GET BEST/WORST Team
 	 * @return
 	 */
 		
 	
-	public Team getBestAirport() {
+	public Team getBestTeam() {
 		Team best=null ;
 		int max = Integer.MIN_VALUE ;	
 		for(Team d: this.graph.vertexSet()) {		
@@ -19,7 +19,7 @@
 		}	return best ;
 	}
 	
-	public Team getWorstAirport() {
+	public Team getWorstTeam() {
 		Team loser=null ;
 		int peggiore=Integer.MAX_VALUE;	
 		for(Team d: this.graph.vertexSet()) {		
@@ -33,3 +33,15 @@
 	
 	
 	}	
+	
+	
+	
+	
+//			System.out.println("--------------------- BEST & WORST-----------------------");
+//			System.out.println("\n");
+//			System.out.println("\n------ Best------  \n");		
+//			Team winner=model.getBestTeam() ;
+//			System.out.println(winner);
+//			System.out.println("\n------ Worst------  \n");	
+//			Team loser=model.getWorstTeam() ;
+//			System.out.println(loser);

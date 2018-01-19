@@ -32,4 +32,9 @@ public class TeamPunteggio implements Comparable<TeamPunteggio>{
 			return -(this.getPunteggio()-other.getPunteggio());
 	}
 
+	@Override
+	public String toString() {
+		return  team + " punteggio = " + punteggio + "\n";
+	}
+
 }

@@ -1,0 +1,102 @@
+//riempio combobox con Team
+    	
+    	Team team= this.boxTeam.getValue();
+    	if (team == null)     { 
+    		txtResult.appendText("Errore: selezionare la squadra\n");    
+    	}
+
+//riempio combobox con stagioni
+    	
+    	Season stagione= this.boxSeason.getValue();
+    	if (stagione == null ) {   
+    		txtResult.appendText("Errore: selezionare la stagione\n");
+    	}
+    	if(stagione.getSeason()<2003 && stagione.getSeason()>2017){
+    		txtResult.appendText("selezionare stagione tra 2003 e 2017 \n");
+    	}
+    	
+    	
+ //richiamo lista che mi da la classifica ordinata in ordine decrescente
+    	
+    	List<TeamPunteggio> ltemp= new ArrayList(  model.getClassifica(stagione));  	
+
+ //per ogni stagione stampo Squadra e il punteggio---> IN txtResult
+    	
+    	for(TeamPunteggio mstemp: ltemp){
+    			txtResult.appendText(mstemp.getTeam().toString()+ " " +Integer.toString(mstemp.getPunteggio())+"\n");
+    		}  
+  
+
+// Team best/worst
+    	
+    	model.creaGrafo(stagione);
+    	Team bestD = model.getBestTeam();
+    		txtResult.appendText("Team migliore del " + stagione.getSeason() + " � " + bestD.toString() + "\n");  
+    	Team worstD = model.getWorstTeam();
+    		txtResult.appendText("Team peggiore del " + stagione.getSeason() + " � " + worstD.toString() + "\n"); 
+
+
+  
+ //RICHIAMO LISTA PER POI STAMPARLA    	
+	
+	List<TeamPunteggio> list = model.getDestinations(stagione, team) ;  	
+    	txtResult.clear();
+    	txtResult.appendText("punteggio di "+team.getTeam()+"\n");
+    	for(TeamPunteggio ad: list)
+    		txtResult.appendText(String.format("%s - %d punti\n", 
+    				ad.getTeam().getTeam(), ad.getPunteggio()));
+	    
+ 
+ //connesso  & n di connessioni
+	     
+	      txtResult.appendText(model.isConnesso());	
+	      
+	      int conn=model.getNumberConn();
+			  txtResult.appendText("connessioni :" + conn +"\n");
+		 
+//visita in ampiezza	  
+		
+		 List<Team> list=model.getRaggiungibiliInAmpiezza(stagione,team); 
+		    for(Team t:list){
+		        	txtResult.appendText(t.toString()+"\n");
+		        }  	    
+//vicini	  
+		
+		 List<Team> vicini=model.trovaVicini(team); 
+			for(Team t:vicini){
+			        txtResult.appendText(t.toString()+"\n");
+			        }  	    
+
+//bellman & n di connessioni
+		
+		String bellman = model.calcolaPercorsoBELLMAN(team); 
+			txtResult.appendText(bellman.toString()+"\n");
+			int connBELLMAN=model.getNumConn(team);
+				txtResult.appendText("connessioni Belllman:" + connBELLMAN +"\n");
+			         
+		}	
+		    
+    	
+//RICHIAMO RICORSIONE
+   	
+   	for(DefaultWeightedEdge e : model.trovaSequenza()){
+  		txtResult.appendText(e.toString()+" ");
+   	}
+    
+    
+    
+    
+    
+    
+     //------------------------>devo settare il modello!!  
+  
+	public void setModel(Model model) {
+		
+		this.model=model;
+		//devo prendere le stagioni e metterle nella combobox e le inizializzo a 0
+		this.boxSeason.getItems().addAll(model.getSeasons());
+		this.boxSeason.setValue(this.boxSeason.getItems().get(0));	
+		//devo prendere le Team e metterle nella combobox e le inizializzo a 0
+		this.boxTeam.getItems().addAll(model.getAllTeams());
+		this.boxTeam.setValue(this.boxTeam.getItems().get(0));	
+	}   

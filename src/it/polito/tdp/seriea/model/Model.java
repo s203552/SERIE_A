@@ -117,7 +117,7 @@ public class Model {
 			for(Match mtemp:dao.getMatchesForSeason(season, mapTeam)){	
 				Team home=mtemp.getHomeTeam();
 				Team away=mtemp.getAwayTeam();
-				if(!home.equals(away)){
+				if(home!=null && away!=null && !home.equals(away) ){
 			
 					//CALCOLO PESO: Il peso dell’arco tra TeamA e TeamB deve valere +1 
 					//se TeamA ha battuto TeamB, 0 se hanno pareggiato, -1 se TeamA ha perso.
@@ -134,6 +134,7 @@ public class Model {
 					
 					//IMPOSTO ARCHI
 					DefaultWeightedEdge e1 = graph.addEdge(home,away);
+					if(peso3>0)
 					graph.setEdgeWeight(e1,peso3 );
 					
 					s+= home+" "+ away+" "+ peso3 +"\n";
@@ -193,19 +194,10 @@ public class Model {
 				if(peso== 1)	punteggio+=3;
 				if(peso==0)		punteggio++;
 			  }
-		sq.add(new TeamPunteggio(t,punteggio));			
+			sq.add(new TeamPunteggio(t,punteggio));			
 		}
-		//ORDINO IN BASE AL PUNTEGGIO
 		
-	    //Collections.sort(sq); ---> CREI CLASSE COMPARATORE PUNTEGGIO
-		/*
-		 * package it.polito.tdp.seriea.model;
-			import java.util.Comparator;
-			public class ComparatorePunteggi implements Comparator<ModelStat> {	
-				@Override  
-				 public int compare(ModelStat o1, ModelStat o2) {return -(o1.getPunteggio()-o2.getPunteggio());}
-			}
-		 */
+		//ORDINO IN BASE AL PUNTEGGIO (crescente)
 		sq.sort(new Comparator<TeamPunteggio>() {
 			@Override
 			public int compare(TeamPunteggio o1, TeamPunteggio o2) {
@@ -215,73 +207,10 @@ public class Model {
 		return sq;
 	}
  
- 
- /* Escludendo gli aeroporti con zero rotte, determinare se nel grafo ottenuto è possibile da ogni aeroporto
- raggiungere ogni altro aeroporto.
- ----->>> fortemente connesso?  */	
- 	
- 	public String isConnesso () {
- 		ci = new ConnectivityInspector<>(this.graph);
- 	    if (ci.isGraphConnected()){ return "Il grafo--> fortemente connesso";	 }
- 		else return "il grafo---> non fortemente connesso";
- 	}
- 			
- /* lista degli aereoporti connessi */
- 		
- 	 public List<Set<Team>> getConn(){	
- 			ci = new ConnectivityInspector<>(this.graph);
- 			return ci.connectedSets();
- 		}
- 		
- /* numero degli aereoporti connessi */
- 		public int getNumberConn(){
- 			return this.getConn().size();
- 		}
 
- /* trovo (max) degli aereoporti connessi */
- 		public Set<Team> MAXconnesso() {
- 			Set<Team> MAX=null;
- 			Double size=0.0;
- 			for(Set<Team> atemp :this.getConn()){
- 				 if(atemp.size()>size){
- 					 size = (double) atemp.size();
- 					 MAX=atemp;
- 				 }	 
- 			 }	 
- 			return MAX;	
- 		}
- 	
- /* trovo (max size) aereoporti connessi */
- 		public int MAXconnessioni() {
- 			return this.MAXconnesso().size();		
- 		}
- 			
- /* trovo 5 achi con peso minimo di (max size) */				 
- 		
- 		public List<EdgePeso> get5ArchiMinWeight (){
 
- 		  List<EdgePeso>  edgePeso= new  ArrayList<>();
- 		  // avevo pensato di sostituire i vertici del grafo con il set trovato Max connesso per poi richiamare il metodo CreaGrafo()
- 		 Set<Team> new_vertex =this.MAXconnesso();
- 		 for (Team a1: new_vertex){
- 		  for (Team a2: new_vertex){
- 			  if (! a1.equals(a2)&& a1!=null&&a2!=null){ 
- 				  //peso
- 					DefaultWeightedEdge e=graph.getEdge(a1, a2);
- 						if(e!=null ){
- 							graph.getEdgeWeight(e);
- 							edgePeso.add(new EdgePeso(e,graph.getEdgeWeight(e)) );
- 						}					
- 				  }  
- 		  }	
- 		 } 
- 		 //peso minimo se ti chiede max devi cambiare nella classe EDGE PESO
- 		 Collections.sort(edgePeso);
- 		 return edgePeso.subList(0, 5);
- 	    }
- 
- 
- 
+
+
 
  /** --------------------------------test model	---------------------------------------------------	*/		
 	
@@ -289,94 +218,99 @@ public class Model {
 			
 			Model model = new Model();
 			Season s=new Season(2016);
-			model.creaGrafo(s) ;
-
+			Team team=new Team("Genoa");
+			Team team2=new Team("Sampdoria");
 			
+			model.creaGrafo(s) ;
 //			model.creaGrafo2(s) ;
 			
-//			System.out.println("\n");
-//			System.out.println("-------- connessioni grafo ---------");
-//			System.out.println("\n");
+
+//			System.out.println("-------------VISITE----------------------");			
 //			
-//			System.out.println(model.isConnesso());			
+//			System.out.println("\n");
+//			List<TeamPunteggio> t= model.getDestinations(s, team);
+//		
+//			System.out.println(t);
+//			System.out.println(" \n----- successori------ \n");
+//			List<Team> ss= model.trovaSucessori(team);
+//			System.out.println(ss);
+//			
+//			System.out.println(" \n-------predeccessori------ \n ");
+//			List<Team> pp= model.trovaPredecessori(team);
+//			System.out.println(pp);
+//
+//			System.out.println(" \n------ calcolo percorso e il suo tempo-------  \n");
+//			System.out.println(model.calcolaPercorso(team, team2));
+//			
+//			System.out.println("\n -------Squadre che il eam ha affrontato in quella stagione------- \n");
+//			List<Team> te= model.getRaggiungibiliInAmpiezza(team);
+//			System.out.println(te);
+//			
+//			System.out.println("\n------- n raggiungibili------ \n");
+//			int i= model.raggiungibili();
+//			System.out.println(i);
+//			
+//			System.out.println("\n-------- percorso BELLMAN---> UGUALE A disktra ma tiene conto peso negativo------ \n");
+//			System.out.println(model.BELLMANcalcolaPercorso(team));
+
+			
+//			System.out.println("-------------CONNECTIVITY INSPECTOR----------------------");					
+//			System.out.println("\n");
+//		
+//			System.out.println("\n------ è fortemente connesso?------ \n");			
+//			System.out.println(model.isConnesso());	
+//			
+//			System.out.println("\n-------- connessioni grafo--------- \n");
 //			int n=model.getNumberConn();
 //			System.out.println(n);
 //			
-//			System.out.println("\n");		
-//			List<Set<Team>> l =model.getConn(); //lista componenti connesse
+//			System.out.println("\n------ lista componenti connesse------ \n");		
+//			List<Set<Team>> l =model.getConn(); 
 //			System.out.println(l);	
 //			
-//			System.out.println("\n");			
-//			Set<Team> t=model.MAXconnesso(); //Arco max connesso 
+//			System.out.println("\n------- Arco max connesso------  \n");			
+//			Set<Team> t=model.MAXconnesso(); 
 //			System.out.println(t);
 //			
-//			System.out.println("\n");			
-//			int nc=model.MAXconnessioni();  // n archi Arco max connesso 
+//			System.out.println(" \n ------n archi Arco max connesso------  "\n");			
+//			int nc=model.MAXconnessioni();   
 //			System.out.println(nc);
 //			
-//			System.out.println("\n");
-//			List<EdgePeso>e= model.get5ArchiMinWeight(); //5 Archi di max connesso
+//			System.out.println("\n--------- 5 Archi di max connesso------- \n");
+//			List<EdgePeso>e= model.get5ArchiMinWeight(); 
 //			System.out.println(e);
 //			
 //					
+//			System.out.println("--------------------- BEST & WORST-----------------------");
 //			System.out.println("\n");
-//			System.out.println("-------- Best & Worst ---------");
-//			System.out.println("\n");
-//			
-//			Team winner=model.getBestAirport() ;
+//			System.out.println("\n------ Best------  \n");		
+//			Team winner=model.getBestTeam() ;
 //			System.out.println(winner);
-//			Team loser=model.getWorstAirport() ;
+//			System.out.println("\n------ Worst------  \n");	
+//			Team loser=model.getWorstTeam() ;
 //			System.out.println(loser);
-			
-			
-//			System.out.println("\n");
-//			System.out.println("-------- Aereoporto Più Lontano ---------");
-//			System.out.println("\n");
-//			
-//			Airport n =model.getPiLontano(1555);
-//			System.out.println(n);
-//			
-//			System.out.println("\n");
-//			System.out.println("------- Aereoporto Più Lontano per volo diretto ----------");
-//			System.out.println("\n");
-//			
-//			Airport l =model.getPiLontanoByVoloDiretto(1555);
-//			System.out.println(l);	
-//			
-//			System.out.println("\n");
-//			System.out.println("------- Aereoporto Più Lontano non Raggiungibile ----------");
-//			System.out.println("\n");
-//			
-//			Airport  s=model.getLontanissimo(3484);
-//			System.out.println(s);
-//			
-//			System.out.println("\n");
-//			System.out.println("-------- connesso? ---------");
-//			System.out.println("\n");
-//						
-//			System.out.println(model.isConnesso());
-//			
-//			System.out.println("\n");
-//			System.out.println("------- Aereoporti di destinazione e distanza ----------");
-//			System.out.println("\n");
-//			
-//			List<AirportDistance>  ad=model.getDestinations(ar, a);
-//			System.out.println(ad);
-//			
-//			System.out.println("\n");
-//			System.out.println("------- Aereoporti raggiungibili ----------");
-//			System.out.println("\n");
-//			
-//			List<Airport>  Ra=model.getReachedAirports(ar);
-//			System.out.println(Ra);
-//			
-//			System.out.println("\n");
-//			System.out.println("------- Aereoporti raggiungibili QUERY ----------");
-//			System.out.println("\n");
-//			
-//			List<Airport> AR= model.getAeroportiRaggiunti(ar);
-//			System.out.println(AR);
 //
+//			System.out.println("---------------PIU VICINO & PIU LONTANO DAL PUNTEGGIO DI UNA SQUADRA-----------------------");			
+//			System.out.println("\n");
+//			System.out.println("\n--------- Team Più Lontano come punti ---------\n");
+//			Team l =model.getPiLontano("Genoa");
+//			System.out.println(l);
+//			
+//			System.out.println("\n");
+//			System.out.println("-------- Team Più Vicino come punti ---------");
+//			System.out.println("\n");
+//			
+//			Team v =model.getPiuVicino("Genoa");
+//			System.out.println(v);
+//			
+//			System.out.println("\n");
+//			System.out.println("------- Team Più Lontano come punti per scontri diretti ----------");
+//			System.out.println("\n");
+//			
+//			Team ld =model.getPiLontanoByVoloDiretto("Genoa");
+//			System.out.println(ld);	
+					
+
 
 	}
 

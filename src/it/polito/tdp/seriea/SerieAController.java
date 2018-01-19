@@ -56,26 +56,23 @@ public class SerieAController {
     	}
     //riempio combobox con stagioni
     	Season stagione= this.boxSeason.getValue();
-    	if (stagione == null) {   
+    	if (stagione == null ) {   
     		txtResult.appendText("Errore: selezionare la stagione\n");
+    	}
+    	if(stagione.getSeason()<2003 && stagione.getSeason()>2017){
+    		txtResult.appendText("selezionare stagione tra 2003 e 2017 \n");
     	}
     //richiamo lista che mi da la classifica ordinata in ordine decrescente
     	List<TeamPunteggio> ltemp= new ArrayList(  model.getClassifica(stagione));  	
     //per ogni stagione stampo Squadra e il punteggio---> IN txtResult
     	for(TeamPunteggio mstemp: ltemp){
     			txtResult.appendText(mstemp.getTeam().toString()+ " " +Integer.toString(mstemp.getPunteggio())+"\n");
-    		}  
-    }   
-   
-    /* 
-     * OPPURE
-     * 
-     * if(boxSeason.getValue()==null)  txtResult.appendText("Selezionare la stagione");
-       Season s = boxSeason.getValue();
-     	for(SquadraInClassifica sw : model.getClassifica(s) )
-     	txtResult.appendText(sw.toString());
-    	}
-     */
+    		} 
+        
+    } 
+		
+
+
     
     @FXML
     void handleDomino(ActionEvent event) {
@@ -83,10 +80,12 @@ public class SerieAController {
     	txtResult.clear(); 
     	
     //RICHIAMO RICORSIONE
+    	
 //    	for(DefaultWeightedEdge e : model.trovaSequenza()){
 //    		txtResult.appendText(e.toString()+" ");
 //    	}
   
+	   	
     }
     
     

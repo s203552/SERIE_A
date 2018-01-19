@@ -75,3 +75,34 @@
  		 Collections.sort(edgePeso);
  		 return edgePeso.subList(0, 5);
  	    }
+ 	    
+ 	
+ 	
+ 	
+ 	    
+			
+//			System.out.println("-------------CONNECTIVITY INSPECTOR----------------------");					
+//			System.out.println("\n");
+//		
+//			System.out.println("\n------ è fortemente connesso?------ \n");			
+//			System.out.println(model.isConnesso());	
+//			
+//			System.out.println("\n-------- connessioni grafo--------- \n");
+//			int n=model.getNumberConn();
+//			System.out.println(n);
+//			
+//			System.out.println("\n------ lista componenti connesse------ \n");		
+//			List<Set<Team>> l =model.getConn(); 
+//			System.out.println(l);	
+//			
+//			System.out.println("\n------- Arco max connesso------  \n");			
+//			Set<Team> t=model.MAXconnesso(); 
+//			System.out.println(t);
+//			
+//			System.out.println(" \n ------n archi Arco max connesso------  "\n");			
+//			int nc=model.MAXconnessioni();   
+//			System.out.println(nc);
+//			
+//			System.out.println("\n--------- 5 Archi di max connesso------- \n");
+//			List<EdgePeso>e= model.get5ArchiMinWeight(); 
+//			System.out.println(e);
