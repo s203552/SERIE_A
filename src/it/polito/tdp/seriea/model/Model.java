@@ -209,9 +209,6 @@ public class Model {
  
 
 
-
-
-
  /** --------------------------------test model	---------------------------------------------------	*/		
 	
 	public static void main(String[] args) {
@@ -289,8 +286,9 @@ public class Model {
 //			System.out.println("\n------ Worst------  \n");	
 //			Team loser=model.getWorstTeam() ;
 //			System.out.println(loser);
-//
-//			System.out.println("---------------PIU VICINO & PIU LONTANO DAL PUNTEGGIO DI UNA SQUADRA-----------------------");			
+//			
+//			System.out.println("\n");
+//			System.out.println("---------------PIU VICINO & PIU LONTANO Al PUNTEGGIO DEL TEAM DI PARTENZA -----------------------");			
 //			System.out.println("\n");
 //			System.out.println("\n--------- Team Più Lontano come punti ---------\n");
 //			Team l =model.getPiLontano("Genoa");
@@ -309,8 +307,6 @@ public class Model {
 //			
 //			Team ld =model.getPiLontanoByVoloDiretto("Genoa");
 //			System.out.println(ld);	
-					
-
 
 	}
 

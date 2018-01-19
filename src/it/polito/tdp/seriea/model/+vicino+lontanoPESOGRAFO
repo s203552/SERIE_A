@@ -1,0 +1,75 @@
+ //stampare Il team raggiungibile da “Genoa” con il punteggio piu diverso da “Genoa” stesso.	
+ public Team getPiLontano(String genoa){
+	 Team team= this.mapTeam.get(genoa);
+	 Team lontano=team;
+	 Double punti=0.0;
+	ConnectivityInspector<Team,DefaultWeightedEdge> ci=new ConnectivityInspector<>(graph);
+	 for(Team atemp :ci.connectedSetOf(team)){
+		 DijkstraShortestPath<Team,DefaultWeightedEdge> djk =new DijkstraShortestPath<>(graph,team,atemp);
+		 if (djk.getPathLength()>punti){
+			 punti=djk.getPathLength();
+			 lontano=atemp;
+		 }
+		 }
+	return lontano;
+		 
+ }
+ 
+ //stampare Il team raggiungibile da “Genoa” con il punteggio piu simile da “Genoa” stesso.	
+	 public Team getPiuVicino(String genoa){
+		 Team team= this.mapTeam.get(genoa);
+		 Team vicino=team;
+		 Double punti=0.0;
+		ConnectivityInspector<Team,DefaultWeightedEdge> ci=new ConnectivityInspector<>(graph);		
+		 for(Team atemp :ci.connectedSetOf(team)){
+			 DijkstraShortestPath<Team,DefaultWeightedEdge> djk =new DijkstraShortestPath<>(graph,team,atemp);			
+				    
+				 if(djk.getPathLength()<punti){
+				 punti=djk.getPathLength();
+				 vicino=atemp;
+			 } 
+		 }
+		 return vicino;
+		 
+	 }
+
+//stampare Il team raggiungibile da “Genoa” con il punteggio piu alto da “Genoa” stesso tramite scontri diretti
+ 
+ public Team getPiLontanoByVoloDiretto(String genoa){
+	 Team team= this.mapTeam.get(genoa);
+	 Team lontano=team;
+	 Double punti=(double) Integer.MIN_VALUE;
+	 for(DefaultWeightedEdge e: graph.outgoingEdgesOf(team)){
+		 if(punti<graph.getEdgeWeight(e)){
+			 punti=graph.getEdgeWeight(e);
+			 lontano=graph.getEdgeTarget(e);
+		 }			 
+	 }
+	 return lontano;
+	 
+ }
+
+// stampare l’aeroporto NON RAGGIUNGIBILE da “Los Angeles Intl” più lontano da “Los Angeles Intl” stesso.
+
+// public Team  getLontanissimo(int losAngeles){
+//	 Team los=this.mapTeam.get(losAngeles);
+//	 Team lontano=null;
+//		List<Team> nonRaggiungibili=new ArrayList<>();
+//		nonRaggiungibili.addAll(graph.vertexSet());
+//		//tolgo quelli raggiungibili (connessi)
+//		ConnectivityInspector<Team,DefaultWeightedEdge> ci=new ConnectivityInspector<>(graph);
+//		nonRaggiungibili.removeAll(ci.connectedSetOf(los));
+//	
+//		double maxDistance=Integer.MIN_VALUE;
+//		for(Team atemp: nonRaggiungibili){
+//			if(!atemp.equals(los)){
+//			double d=LatLngTool.distance(new LatLng(atemp.getLatitude(),atemp.getLongitude()),
+//					new LatLng(los.getLatitude(),los.getLongitude()) , LengthUnit.KILOMETER);
+//			if(d>maxDistance){
+//				lontano=atemp;
+//				maxDistance=d;
+//			}
+//			}
+//		}			
+//		return lontano;			
+//	}
