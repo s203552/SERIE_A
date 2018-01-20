@@ -13,7 +13,7 @@
   */
 
 		
-	public void creaGrafoSEASON() {	
+ public void creaGrafoSEASON() {	
 		String s="";
 		if (graphSeason==null)  graphSeason=new SimpleWeightedGraph<Integer,DefaultWeightedEdge>(DefaultWeightedEdge.class);	
 		Graphs.addAllVertices(graphSeason, dao.getYears());//aggiungi vertici
@@ -25,10 +25,11 @@
 				for(Integer s2:graphSeason.vertexSet()){
 					if(s1!=null && s2!=null&& !s1.equals(s2) ){	
 							//IMPOSTO ARCHI
+							//numero squadre presenti in entrambe le stagioni
 							List<String> m=dao.Squadre2Stagioni(s1, s2);
 							Double peso= (double) m.size();
-//							DefaultWeightedEdge e=graphSeason.addEdge(s1, s2);
-//							graphSeason.setEdgeWeight(e, peso);
+							//goal
+							Integer peso2= dao.GoalTotali2Stagioni(s1, s2);
 							Graphs.addEdgeWithVertices(graphSeason,s1, s2, peso);
 							s+= s1+" "+ s2+" "+peso+"\n";	
 				}
@@ -88,3 +89,79 @@
 //			System.out.println(ss);
 //			List<IntegerPair> ips= model.getDestinations(2016);		
 //			System.out.println(ips);
+
+
+ /** --------------------------------DAO---------------------------------------------------	*/		
+
+
+	
+	/* @return numero squadre  nelle due stagioni	 */
+	public List<String> Squadre2Stagioni(Integer s,Integer s1) {
+		
+		String sql = "SELECT m.hometeam FROM matches m "
+				+ "WHERE  m.hometeam IN (SELECT DISTINCT hometeam FROM matches m WHERE m.`Season`= ?  GROUP BY  m.`HomeTeam`)"
+				+ " AND m.hometeam IN (SELECT DISTINCT hometeam FROM matches m WHERE m.`Season`= ? GROUP BY m.`HomeTeam`) GROUP BY m.hometeam";
+		
+				
+		List<String> result = new ArrayList<>() ;
+		
+		try {
+			Connection conn = DBConnect.getConnection() ;
+			PreparedStatement st = conn.prepareStatement(sql) ;
+			st.setInt(1, s);
+			st.setInt(2, s1);
+			ResultSet res = st.executeQuery() ;
+			while(res.next()) {
+				result.add(new String (res.getString("m.hometeam")));
+			}	
+			 
+			
+			conn.close();
+			return result ;
+			
+			} catch (SQLException e) {
+	
+			e.printStackTrace();
+			throw new RuntimeException("Error in database query",e);
+	
+		}
+	
+	}
+
+	/* @return  GOAL  tot, diff, casa, trasferta nelle due stagioni	 */
+	public Integer GoalTotali2Stagioni(Integer s,Integer s1) {
+		//TOTALI in 2 stagioni
+		String sql = "SELECT sum(fthg+ftag) as dr FROM matches m WHERE  m.hometeam IN (SELECT DISTINCT hometeam FROM matches m GROUP BY m.`HomeTeam`) AND season=? OR season=?";
+		//diff_reti in 2 stagioni
+		String sql1 = "SELECT sum(fthg-ftag) as dr FROM matches m WHERE  m.hometeam IN (SELECT DISTINCT hometeam FROM matches m GROUP BY m.`HomeTeam`) AND season=? OR season=?";
+		//in casa in 2 stagioni
+		String sql2 = "SELECT sum(fthg) as dr FROM matches m WHERE  m.hometeam IN (SELECT DISTINCT hometeam FROM matches m GROUP BY m.`HomeTeam`) AND season=? OR season=?";
+		//in trasferta in 2 stagioni
+		String sql3 = "SELECT sum(ftag) as dr FROM matches m WHERE  m.hometeam IN (SELECT DISTINCT hometeam FROM matches m GROUP BY m.`HomeTeam`) AND season=? OR season=?";
+		
+					
+		
+		try {
+			Connection conn = DBConnect.getConnection() ;
+	
+			PreparedStatement st = conn.prepareStatement(sql) ;
+			st.setInt(1, s);
+			st.setInt(2, s1);
+			
+			ResultSet res = st.executeQuery() ;
+			res.next() ;
+			Integer result = res.getInt("dr") ;
+			
+			conn.close();
+			return result ;
+			
+			} catch (SQLException e) {
+	
+			e.printStackTrace();
+			throw new RuntimeException("Error in database query",e);
+	
+		}
+	}	
+
+
+

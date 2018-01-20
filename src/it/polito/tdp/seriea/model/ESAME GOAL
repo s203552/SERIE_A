@@ -10,15 +10,15 @@
   *  Per il numero di Goal selezionato nel menu a tendina, stampare l’elenco dei risultati in cui tali goal sono stati segnati 
   *  in casa (ed il numero di partite corrispondenti), in ordine decrescente di numero di partite.
   */
- 
-	public void creaGrafoGOAL() {
+  
+ public void creaGrafoGOAL() {
 		String s="";
 		if (graphGOAL==null) graphGOAL=new SimpleWeightedGraph<Integer,DefaultWeightedEdge>(DefaultWeightedEdge.class);	
 		Graphs.addAllVertices(graphGOAL, this.getTotGOAL());//aggiungi vertici
 		Map<String,Team> mapTEAM =dao.MapTeams();
 		Map<Integer,Season>mapSEASON= dao.MapSeasons();
 		//aggiungi archi
-			for(Match mtemp:dao.getAllMatches(mapTEAM, mapSEASON)){	
+			for(Match mtemp:dao.getAllMatches(mapTeam, mapSeason)){	
 				Integer home= mtemp.getFthg();
 				Integer away= mtemp.getFtag();
 						if(home!=null && away!=null && !home.equals(away) ){
@@ -29,8 +29,7 @@
 							s+= home+"  "+ away +" "+ peso+"\n";						
 					}
 				}
-//				}	
-//			}
+
 		System.out.println("Grafo creato: " + graphGOAL.vertexSet().size() + " nodi, " + graphGOAL.edgeSet().size() + " archi");	
 		System.out.println(s);
 	}
@@ -77,3 +76,61 @@
 //			System.out.println(te);
 //			List<IntegerPair> t= model.getDestinations(3);		
 //			System.out.println(t);
+
+ /** --------------------------------DAO---------------------------------------------------	*/		
+
+ /**------------------------------------PESO GRAFOGOAL----------------------------------------------*/
+	
+	/**	
+	 * @return partite giocate finite con quel risultato
+	 */
+	public Integer nPartiteFiniteXaY(Integer i,Integer i2) {
+		
+		String sql = "SELECT  m.FTHG, m.FTAG, count(*) AS dr FROM matches m WHERE  m.`FTHG`=? AND m.`FTAG`=? group by m.`FTHG`, m.`FTAG` ";	
+		try {
+			Connection conn = DBConnect.getConnection() ;
+	
+			PreparedStatement st = conn.prepareStatement(sql) ;
+			st.setInt(1, i);
+			st.setInt(2, i2);
+			ResultSet res = st.executeQuery() ;
+			res.next() ;
+			Integer result = res.getInt("dr") ;
+			
+			conn.close();
+			return result ;
+			
+			} catch (SQLException e) {
+	
+			e.printStackTrace();
+			throw new RuntimeException("Error in database query",e);
+	
+		}
+	}	
+	
+	public Integer nPartiteFiniteXaY_InSTAGIONE(Integer i,Integer i2,Season s) {
+		
+		String sql = "SELECT  season,m.FTHG, m.FTAG, count(*) AS dr FROM matches m WHERE  m.`FTHG`=3 AND m.`FTAG`=1 AND season= 2017 GROUP BY m.`FTHG`, m.`FTAG`,season";	
+		try {
+			Connection conn = DBConnect.getConnection() ;
+	
+			PreparedStatement st = conn.prepareStatement(sql) ;
+			st.setInt(1, i);
+			st.setInt(2, i2);
+			st.setInt(3, s.getSeason());
+			ResultSet res = st.executeQuery() ;
+			res.next() ;
+			Integer result = res.getInt("dr") ;
+			
+			conn.close();
+			return result ;
+			
+			} catch (SQLException e) {
+	
+			e.printStackTrace();
+			throw new RuntimeException("Error in database query",e);
+	
+		}
+	}	
+
+	

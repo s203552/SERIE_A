@@ -14,7 +14,28 @@
     	if(stagione.getSeason()<2003 && stagione.getSeason()>2017){
     		txtResult.appendText("selezionare stagione tra 2003 e 2017 \n");
     	}
-    	
+		
+//INSERIMENTO STINGA DA TRASFORMARE IN INT
+    		String s =this.txtInput.getText();		
+    		if(s.equals("")){
+    			txtResult.appendText("ERRORE: Inserire una distanza massima\n");
+    			return;
+    		}	
+    		//trasformo in int
+    		int anno;
+    		try{
+    		 anno=Integer.parseInt(s);
+    		}catch(NumberFormatException e){
+    			txtResult.appendText("ERRORE: Inserire un numero \n");
+    			return;
+    		}	
+    		
+ //CONTROLLI STRINGA   		
+      	String stringa=txtInput.getText();
+    	if(stringa=="" || stringa.length()<1 || !stringa.matches("[a-zA-Z]+")){
+    		txtResult.appendText("Inserisci una stringa valida.\n");
+    		return;
+    	}   	
     	
  //richiamo lista che mi da la classifica ordinata in ordine decrescente
     	
@@ -75,7 +96,16 @@
 				txtResult.appendText("connessioni Belllman:" + connBELLMAN +"\n");
 			         
 		}	
-		    
+
+
+			List<Team> trovaSucessori =model.trovaSucessori(s);
+			txtResult.appendText(trovaSucessori.toString());
+			List<Team> trovaPredeccessori =model.trovaPredecessori(s);
+			txtResult.appendText(trovaPredeccessori.toString());
+			List<Team> trovaRaggiungibili =model.getRaggiungibiliInAmpiezza(s);
+			txtResult.appendText(trovaRaggiungibili.toString());
+			Integer n= model.raggiungibili();
+			txtResult.appendText(n.toString());		    
     	
 //RICHIAMO RICORSIONE
    	

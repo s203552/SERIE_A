@@ -21,7 +21,7 @@ import it.polito.tdp.seriea.model.Team;
 public class SerieADAO {
 	
 	/**
-	 * @return numero goal 
+	 * @return numero goal & stagioni
 	 */
 	public List<Integer> getTotGOAL () {
 		String sql = "SELECT DISTINCT fthg FROM matches ORDER BY fthg";
@@ -47,9 +47,6 @@ public class SerieADAO {
 		}
 	}	
 
-	/**
-	 * @return lista di tutte le stagioni 
-	 */
 	public List<Integer> getYears () {
 		String sql = "SELECT Distinct season FROM matches";
 				
@@ -357,9 +354,7 @@ public class SerieADAO {
 	}
 		//VITTORIA CASA CON ALMENO 2 GOAL DI SCARTO______> QUERY:   M.FTHR-MFTAR >2
 	
-
-	/**
-	 *  * @return numero di squadre che hanno giocato nelle due stagioni
+	/** @return numero di squadre che hanno giocato nelle due stagioni
 	 */
 	public List<Match> nSquadreNelleSTAGIONI(Integer s1,Integer s2,Map<String,Team> mapSquadre,Map<Integer, Season> mapSeason) {
 		String sql = "(SELECT DISTINCT * FROM matches m WHERE m.`Season`= ?  GROUP BY  m.`HomeTeam`)"
@@ -393,9 +388,13 @@ public class SerieADAO {
 
 	
 /**-------------------------------------------PESI GRAFICI ESAMI---------------------------------------*/
+/**----------------------------------------------------------------------------------*/
+
+	
+	/**------------------------------------PESO GRAFOGOAL----------------------------------------------*/
 	
 	/**	
-	 * PESO GRAFOGOAL@return partite giocate finite con quel risultato
+	 * @return partite giocate finite con quel risultato
 	 */
 	public Integer nPartiteFiniteXaY(Integer i,Integer i2) {
 		
@@ -420,19 +419,46 @@ public class SerieADAO {
 	
 		}
 	}	
-
-	/**----------------------------------------------------------------------------------*/
+	
+	public Integer nPartiteFiniteXaY_InSTAGIONE(Integer i,Integer i2,Season s) {
 		
-	/**	
-	 * PESO GRAFOTEAM @return numero partite giocate contro
-	 */
+		String sql = "SELECT  season,m.FTHG, m.FTAG, count(*) AS dr FROM matches m WHERE  m.`FTHG`=3 AND m.`FTAG`=1 AND season= 2017 GROUP BY m.`FTHG`, m.`FTAG`,season";	
+		try {
+			Connection conn = DBConnect.getConnection() ;
+	
+			PreparedStatement st = conn.prepareStatement(sql) ;
+			st.setInt(1, i);
+			st.setInt(2, i2);
+			st.setInt(3, s.getSeason());
+			ResultSet res = st.executeQuery() ;
+			res.next() ;
+			Integer result = res.getInt("dr") ;
+			
+			conn.close();
+			return result ;
+			
+			} catch (SQLException e) {
+	
+			e.printStackTrace();
+			throw new RuntimeException("Error in database query",e);
+	
+		}
+	}	
+
+	
+	
+	/**-------------------------------------PESO GRAFOTEAM---------------------------------------------*/
+		
+	/*	 @return numero partite o stagioni che hanno giocato contro	 */
 	public Integer nPartiteGiocateContro(Team  a,Team  a1,Map<String,Team> teams) {
 		
 		//count per 2 perchè è andata e ritorno
 		
+		//nPartiteGiocateContro
 		String sql = "SELECT  m.hometeam , m.awayteam, count(*)*2 AS dr "    
 				+ "FROM matches m WHERE  m.hometeam=? AND m.awayteam=? GROUP BY m.hometeam, m.`AwayTeam`";
-				
+		//nStagioniGiocateContro		
+		String sql1 = "SELECT m.hometeam , m.awayteam, count(season) AS dr FROM matches m WHERE m.hometeam=? AND m.awayteam=? GROUP BY m.hometeam , m.awayteam";
 		
 		try {
 			Connection conn = DBConnect.getConnection() ;
@@ -457,15 +483,63 @@ public class SerieADAO {
 	
 		}
 	}	
-	
+	/*	 @return TOTgoalScontriDiretti------SUM diff reti----->TOTgoal team in casa----->TOTgoal team in trasferta	 */
+	public Integer TOTgoalScontriDiretti(Team  a,Team  a1,Map<String,Team> teams) {
+		String sql = "SELECT m.hometeam , m.awayteam, sum(m.fthg+m.FTAG) AS dr "
+				+ "FROM matches m WHERE m.hometeam=? AND m.awayteam=? GROUP BY m.hometeam , m.awayteam";
+		//SOMMA DIFFERENZA RETI SCONTRI DIRETTI
+		String sql1 = "SELECT m.hometeam , m.awayteam, sum(m.fthg-m.FTAG) AS dr "
+				+ "FROM matches m WHERE m.hometeam=? AND m.awayteam=? GROUP BY m.hometeam , m.awayteam";
+		//SOMMA GOAL SQUADRA IN CASA SCONTRI DIRETTI
+		String sql2 = "SELECT m.hometeam , m.awayteam, sum(m.fthg) AS dr "
+				+ "FROM matches m WHERE m.hometeam=? AND m.awayteam=? GROUP BY m.hometeam , m.awayteam";
+		//SOMMA GOAL SQUADRA IN TRASFERTA  SCONTRI DIRETTI
+		String sql3 = "SELECT m.hometeam , m.awayteam, sum(m.FTAG) AS dr "
+				+ "FROM matches m WHERE m.hometeam=? AND m.awayteam=? GROUP BY m.hometeam , m.awayteam";
+		try {
+			Connection conn = DBConnect.getConnection() ;
+
+			PreparedStatement st = conn.prepareStatement(sql) ;
+			st.setString(1, a.getTeam());
+			st.setString(2, a1.getTeam());
+			
+			
+			ResultSet res = st.executeQuery() ;
+			res.next() ;
+			Team away = teams.get(res.getString("m.awayteam"));
+			Integer result = res.getInt("dr") ;
+			
+			conn.close();
+			return result ;
+			
+			} catch (SQLException e) {
+
+			e.printStackTrace();
+			throw new RuntimeException("Error in database query",e);
+
+		}
+	}	
+
 	/**	
-	 * @return diff reti
+	 *  DATA LA STAGIONE
+	 * 
+	 * 
+	 * 
+	 * @return diff reti----->Goal in casa----->Goal in trasferta---->tot goal
 	 */
 	public Integer diffRETI(Team  a,Team  a1,Season s,Map<String,Team> teams) {
+		//diff_REti
 		String sql = "SELECT  m.hometeam , m.awayteam, m.fthg-m.ftag AS dr FROM matches m "
 				+ "WHERE m.season=? AND m.hometeam=? AND m.awayteam=?";
-				
-		
+		//TOT
+		String sql1 = "SELECT  m.hometeam , m.awayteam, m.fthg+m.ftag AS dr FROM matches m "
+				+ "WHERE m.season=? AND m.hometeam=? AND m.awayteam=?";		
+		//CASA
+		String sql2 = "SELECT  m.hometeam , m.awayteam, m.fthg AS dr FROM matches m "
+				+ "WHERE m.season=? AND m.hometeam=? AND m.awayteam=?";
+		//Trasferta
+		String sql3 = "SELECT  m.hometeam , m.awayteam, m.ftag AS dr FROM matches m "
+				+ "WHERE m.season=? AND m.hometeam=? AND m.awayteam=?";
 		try {
 			Connection conn = DBConnect.getConnection() ;
 	
@@ -491,17 +565,18 @@ public class SerieADAO {
 		}
 	}	
 	
-	/**----------------------------------------------------------------------------------*/
 	
-	/**	
-	 * PESO GRAFOSEASON @return numero squadre nelle due stagioni
-	 */
+	
+	/**---------------------------------------PESO GRAFOSEASON-------------------------------------------*/
+	
+	/* @return numero squadre  nelle due stagioni	 */
 	public List<String> Squadre2Stagioni(Integer s,Integer s1) {
 		
 		String sql = "SELECT m.hometeam FROM matches m "
 				+ "WHERE  m.hometeam IN (SELECT DISTINCT hometeam FROM matches m WHERE m.`Season`= ?  GROUP BY  m.`HomeTeam`)"
 				+ " AND m.hometeam IN (SELECT DISTINCT hometeam FROM matches m WHERE m.`Season`= ? GROUP BY m.`HomeTeam`) GROUP BY m.hometeam";
 		
+				
 		List<String> result = new ArrayList<>() ;
 		
 		try {
@@ -527,7 +602,55 @@ public class SerieADAO {
 	
 	}
 
+	/* @return  GOAL  tot, diff, casa, trasferta nelle due stagioni	 */
+	public Integer GoalTotali2Stagioni(Integer s,Integer s1) {
+		//TOTALI in 2 stagioni
+		String sql = "SELECT sum(fthg+ftag) as dr FROM matches m WHERE  m.hometeam IN (SELECT DISTINCT hometeam FROM matches m GROUP BY m.`HomeTeam`) AND season=? OR season=?";
+		//diff_reti in 2 stagioni
+		String sql1 = "SELECT sum(fthg-ftag) as dr FROM matches m WHERE  m.hometeam IN (SELECT DISTINCT hometeam FROM matches m GROUP BY m.`HomeTeam`) AND season=? OR season=?";
+		//in casa in 2 stagioni
+		String sql2 = "SELECT sum(fthg) as dr FROM matches m WHERE  m.hometeam IN (SELECT DISTINCT hometeam FROM matches m GROUP BY m.`HomeTeam`) AND season=? OR season=?";
+		//in trasferta in 2 stagioni
+		String sql3 = "SELECT sum(ftag) as dr FROM matches m WHERE  m.hometeam IN (SELECT DISTINCT hometeam FROM matches m GROUP BY m.`HomeTeam`) AND season=? OR season=?";
+		
+					
+		
+		try {
+			Connection conn = DBConnect.getConnection() ;
+	
+			PreparedStatement st = conn.prepareStatement(sql) ;
+			st.setInt(1, s);
+			st.setInt(2, s1);
+			
+			ResultSet res = st.executeQuery() ;
+			res.next() ;
+			Integer result = res.getInt("dr") ;
+			
+			conn.close();
+			return result ;
+			
+			} catch (SQLException e) {
+	
+			e.printStackTrace();
+			throw new RuntimeException("Error in database query",e);
+	
+		}
+	}	
 
+
+
+
+
+
+	//SELECT season,sum(fthg+ftag) FROM matches m WHERE Season=?  GROUP BY season
+
+
+
+
+
+
+
+//-------------------------------------main----------------------------------------------
 		
 	
 

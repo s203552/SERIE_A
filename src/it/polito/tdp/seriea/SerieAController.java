@@ -47,8 +47,12 @@ public class SerieAController {
     
     @FXML
     void handleCarica(ActionEvent event) {
+
+    	
     //pulisco il testo
-    	txtResult.clear();  	
+    	txtResult.clear();  
+    	
+    	
    	//riempio combobox con Team
     	Team team= this.boxTeam.getValue();
     	if (team == null)     { 
@@ -69,26 +73,54 @@ public class SerieAController {
     			txtResult.appendText(mstemp.getTeam().toString()+ " " +Integer.toString(mstemp.getPunteggio())+"\n");
     		} 
         
+    	/**
+    	 * PER ABILITARE il BOTTONE SUCCESSIVO
+    	 */
+        //	btnCerca.setDisable(false) ;
+
     } 
 		
-
-
-    
     @FXML
     void handleDomino(ActionEvent event) {
     //pulisco il testo
-    	txtResult.clear(); 
-    	
+    	txtResult.clear();    	
     //RICHIAMO RICORSIONE
     	
 //    	for(DefaultWeightedEdge e : model.trovaSequenza()){
 //    		txtResult.appendText(e.toString()+" ");
 //    	}
-  
-	   	
     }
+ 
     
+//--------------------------SE HO LISTA FUORI CON PIU VALORI A TENDINA MA ME NE SERVE SOLO UNA DEI 2-------------------
+//    CoppiaInt anni;
+//    @FXML
+//    void doCreaGrafo(ActionEvent event) {
+//    	
+//		
+//    	anni  = boxAnni.getValue();	 
+//		if(boxAnni.getValue()==  null)
+//		  { txtResult.setText("Nessuna shape selezionata");
+//		  		return;}
+//		
+//	    model.creaGrafo(anni.getAnno());
+//	   
+//		Sighting s  = boxSightingUs.getValue();	 
+//		if(boxSightingUs.getValue()==  null)
+//		  { txtResult.setText("Nessuna shape selezionata");
+//		  		return;}
+//
+//    }
+//
+// //nel set model
+//public void setModel(Model model) {
     
+// this.model=model;	
+// this.boxAnni.getItems().addAll(model.getAllCoppiaIntAnni());
+// anni  = boxAnni.getValue();	 
+// this.boxSightingUs.getItems().addAll(model.getAllStati(anni.getAnno()));		
+//}
+
 
     @FXML // This method is called by the FXMLLoader when initialization is complete
     void initialize() {

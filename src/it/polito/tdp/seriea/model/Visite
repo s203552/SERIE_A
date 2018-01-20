@@ -7,6 +7,7 @@
 7) raggiungibili (visita in  profondità)---> breathfirstInterator
 8) numero di raggiungibili (visita in  profondità)
 9) BELLMANcalcolaPercorso(Team partenza)
+10) VICINI CONNESSI
 
 
 /*Si permetta all’utente di selezionare un team tra quelli raggiunti della stagione, e determinare
@@ -124,7 +125,12 @@
 	 		return ritorno;
 	 	}
 	 	
-	 	
+//VICINI CONNESSI
+	 public List<Team> trovaViciniConnessi(Team s) {	
+			List<Team> connessi = new ArrayList<Team>();
+			 connessi.addAll(Graphs.neighborListOf(graph,s));				
+			return  connessi;
+		}	 	
 --------------------------------------
 
 
@@ -132,8 +138,8 @@
 //			
 //			System.out.println("\n");
 //			List<TeamPunteggio> t= model.getDestinations(s, team);
-//		
 //			System.out.println(t);
+//			
 //			System.out.println(" \n----- successori------ \n");
 //			List<Team> ss= model.trovaSucessori(team);
 //			System.out.println(ss);
@@ -155,3 +161,7 @@
 //			
 //			System.out.println("\n-------- percorso BELLMAN---> UGUALE A disktra ma tiene conto peso negativo------ \n");
 //			System.out.println(model.BELLMANcalcolaPercorso(team));
+
+//			System.out.println(" \n----- vicini connessi------ \n");
+//			List<Team> ss= model.trovaViciniConnessi(team);
+//			System.out.println(ss);

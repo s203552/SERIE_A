@@ -18,7 +18,8 @@ public class Esame {
 	
 	Model model;
 	
-	Se ci sono delle comboBox assicurati di averle inizializzate. Esempi:
+	Se ci sono delle comboBox assicurati di averle inizializzate. 
+	Esempi:
 	private ChoiceBox<Season> boxSeason;
 	private ChoiceBox<Team> boxTeam;
 	

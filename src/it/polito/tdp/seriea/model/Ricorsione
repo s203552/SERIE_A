@@ -42,41 +42,7 @@
 			}		
 		}
 
-/**
---------------------------------------------------------------
- * RICORSIONE 
-*/		
-		
-		//metodo
-			private void scegli(List<DefaultWeightedEdge> parziale, int livello, List<DefaultWeightedEdge> best, Team squadra) {
-				
-				// lo svolgo sugli archi perchè se no non considero 
-				//alcune partite, in quanto la squadra svolge piu partite sia in casa che in trasferta
-				
-				if(parziale.size() > best.size()){ 	best.clear();             //se parziale >cammino MAX  -> sostituisco
-													best.addAll(parziale);
-													System.out.println(best.toString());} 
-				else{
-					  for(DefaultWeightedEdge e: graph.outgoingEdgesOf(squadra)){    //ARCHI USCENTI graph.outgoingEdgesOf
-						if(graph.getEdgeWeight(e)==1){
-							if(!parziale.contains(e))  
-										{ parziale.add(e);
-										scegli(parziale,livello+1,best,graph.getEdgeTarget(e));  //graph.getEdgeTarget 
-																								// LANCIA RICORSIONE sui team
-										parziale.remove(e);	}
-						 }
-					   }
-					}
-			}
-		//implementazione metodo	
-			public List<DefaultWeightedEdge> trovaSequenza(){
-				List<DefaultWeightedEdge> best=new ArrayList<DefaultWeightedEdge> ();
-				for( Team squadra: graph.vertexSet()){
-						List<DefaultWeightedEdge> parziale=new ArrayList<DefaultWeightedEdge>();
-						scegli(parziale,0,best,squadra);	
-				}
-				return best;
-			}
+
 
 			
 /**
@@ -185,6 +151,37 @@
 			}
 		}
 	}					
-						
-						
+	
+//-------------------------------------------OPPURE--------------------					
+		
+				//metodo
+			private void scegli(List<DefaultWeightedEdge> parziale, int livello, List<DefaultWeightedEdge> best, Team squadra) {
+				
+				// lo svolgo sugli archi perchè se no non considero 
+				//alcune partite, in quanto la squadra svolge piu partite sia in casa che in trasferta
+				
+				if(parziale.size() > best.size()){ 	best.clear();             //se parziale >cammino MAX  -> sostituisco
+													best.addAll(parziale);
+													System.out.println(best.toString());} 
+				else{
+					  for(DefaultWeightedEdge e: graph.outgoingEdgesOf(squadra)){    //ARCHI USCENTI graph.outgoingEdgesOf
+						if(graph.getEdgeWeight(e)==1){
+							if(!parziale.contains(e))  
+										{ parziale.add(e);
+										scegli(parziale,livello+1,best,graph.getEdgeTarget(e));  //graph.getEdgeTarget 
+																								// LANCIA RICORSIONE sui team
+										parziale.remove(e);	}
+						 }
+					   }
+					}
+			}
+		//implementazione metodo	
+			public List<DefaultWeightedEdge> trovaSequenza(){
+				List<DefaultWeightedEdge> best=new ArrayList<DefaultWeightedEdge> ();
+				for( Team squadra: graph.vertexSet()){
+						List<DefaultWeightedEdge> parziale=new ArrayList<DefaultWeightedEdge>();
+						scegli(parziale,0,best,squadra);	
+				}
+				return best;
+			}				
 						

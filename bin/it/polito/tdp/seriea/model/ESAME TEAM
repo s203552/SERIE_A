@@ -22,7 +22,7 @@
 		Map<Integer,Season>mapSEASON= dao.MapSeasons();
 		Map<String,Team>mapTEAM= dao.MapTeams();
 		//aggiungi archi
-			for(Match mtemp: dao.getAllMatches(mapTeam, mapSEASON)){	
+			for(Match mtemp: dao.getAllMatches(mapTeam, mapSeason)){	
 				Team home=mtemp.getHomeTeam();
 				Team away=mtemp.getAwayTeam();
 				if(home!=null && away!=null && !home.equals(away) ){
@@ -85,3 +85,124 @@
 //			System.out.println(te);
 //			List<TeamPunteggio> t= model.getDestinations(team);		
 //			System.out.println(t);
+
+ /** --------------------------------DAO--------------------------------------------------	*/		
+
+
+/*	 @return numero partite o stagioni che hanno giocato contro	 */
+	public Integer nPartiteGiocateContro(Team  a,Team  a1,Map<String,Team> teams) {
+		
+		//count per 2 perchè è andata e ritorno
+		
+		//nPartiteGiocateContro
+		String sql = "SELECT  m.hometeam , m.awayteam, count(*)*2 AS dr "    
+				+ "FROM matches m WHERE  m.hometeam=? AND m.awayteam=? GROUP BY m.hometeam, m.`AwayTeam`";
+		//nStagioniGiocateContro		
+		String sql1 = "SELECT m.hometeam , m.awayteam, count(season) AS dr FROM matches m WHERE m.hometeam=? AND m.awayteam=? GROUP BY m.hometeam , m.awayteam";
+		
+		try {
+			Connection conn = DBConnect.getConnection() ;
+	
+			PreparedStatement st = conn.prepareStatement(sql) ;
+			st.setString(1, a.getTeam());
+			st.setString(2, a1.getTeam());
+			
+			
+			ResultSet res = st.executeQuery() ;
+			res.next() ;
+			Team away = teams.get(res.getString("m.awayteam"));
+			Integer result = res.getInt("dr") ;
+			
+			conn.close();
+			return result ;
+			
+			} catch (SQLException e) {
+	
+			e.printStackTrace();
+			throw new RuntimeException("Error in database query",e);
+	
+		}
+	}	
+	/*	 @return TOTgoalScontriDiretti------SUM diff reti----->TOTgoal team in casa----->TOTgoal team in trasferta	 */
+	public Integer TOTgoalScontriDiretti(Team  a,Team  a1,Map<String,Team> teams) {
+		String sql = "SELECT m.hometeam , m.awayteam, sum(m.fthg+m.FTAG) AS dr "
+				+ "FROM matches m WHERE m.hometeam=? AND m.awayteam=? GROUP BY m.hometeam , m.awayteam";
+		//SOMMA DIFFERENZA RETI SCONTRI DIRETTI
+		String sql1 = "SELECT m.hometeam , m.awayteam, sum(m.fthg-m.FTAG) AS dr "
+				+ "FROM matches m WHERE m.hometeam=? AND m.awayteam=? GROUP BY m.hometeam , m.awayteam";
+		//SOMMA GOAL SQUADRA IN CASA SCONTRI DIRETTI
+		String sql2 = "SELECT m.hometeam , m.awayteam, sum(m.fthg) AS dr "
+				+ "FROM matches m WHERE m.hometeam=? AND m.awayteam=? GROUP BY m.hometeam , m.awayteam";
+		//SOMMA GOAL SQUADRA IN TRASFERTA  SCONTRI DIRETTI
+		String sql3 = "SELECT m.hometeam , m.awayteam, sum(m.FTAG) AS dr "
+				+ "FROM matches m WHERE m.hometeam=? AND m.awayteam=? GROUP BY m.hometeam , m.awayteam";
+		try {
+			Connection conn = DBConnect.getConnection() ;
+
+			PreparedStatement st = conn.prepareStatement(sql) ;
+			st.setString(1, a.getTeam());
+			st.setString(2, a1.getTeam());
+			
+			
+			ResultSet res = st.executeQuery() ;
+			res.next() ;
+			Team away = teams.get(res.getString("m.awayteam"));
+			Integer result = res.getInt("dr") ;
+			
+			conn.close();
+			return result ;
+			
+			} catch (SQLException e) {
+
+			e.printStackTrace();
+			throw new RuntimeException("Error in database query",e);
+
+		}
+	}	
+
+	/**	
+	 *  DATA LA STAGIONE
+	 * 
+	 * 
+	 * 
+	 * @return diff reti----->Goal in casa----->Goal in trasferta---->tot goal
+	 */
+	public Integer diffRETI(Team  a,Team  a1,Season s,Map<String,Team> teams) {
+		//diff_REti
+		String sql = "SELECT  m.hometeam , m.awayteam, m.fthg-m.ftag AS dr FROM matches m "
+				+ "WHERE m.season=? AND m.hometeam=? AND m.awayteam=?";
+		//TOT
+		String sql1 = "SELECT  m.hometeam , m.awayteam, m.fthg+m.ftag AS dr FROM matches m "
+				+ "WHERE m.season=? AND m.hometeam=? AND m.awayteam=?";		
+		//CASA
+		String sql2 = "SELECT  m.hometeam , m.awayteam, m.fthg AS dr FROM matches m "
+				+ "WHERE m.season=? AND m.hometeam=? AND m.awayteam=?";
+		//Trasferta
+		String sql3 = "SELECT  m.hometeam , m.awayteam, m.ftag AS dr FROM matches m "
+				+ "WHERE m.season=? AND m.hometeam=? AND m.awayteam=?";
+		try {
+			Connection conn = DBConnect.getConnection() ;
+	
+			PreparedStatement st = conn.prepareStatement(sql) ;
+			st.setInt(1, s.getSeason());
+			st.setString(2, a.getTeam());
+			st.setString(3, a1.getTeam());
+			
+			
+			ResultSet res = st.executeQuery() ;
+			res.next() ;
+			Team away = teams.get(res.getString("m.awayteam"));
+			Integer result = res.getInt("dr") ;
+			
+			conn.close();
+			return result ;
+			
+			} catch (SQLException e) {
+	
+			e.printStackTrace();
+			throw new RuntimeException("Error in database query",e);
+	
+		}
+	}	
+	
+	
