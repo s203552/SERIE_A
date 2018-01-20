@@ -121,3 +121,70 @@
 							}
 									
 						}
+						
+/**
+	 * RICORSIONE 4 
+	 * -------------------------------------------------------------------------
+	 * a. Quando l’utente seleziona la funzione “Domino”, occorre ricercare e stampare la più lunga sequenza di partite 
+	 * “concatenate”, in cui ciascuna squadra sconfitta in una partita diviene vincitrice nella partita successiva. 
+	 * Ad esempio, la sequenza potrà essere: TeamA, TeamC, TeamK, se nella partita TeamA-TeamC è risultato vincitore TeamA, 
+	 * e nella partita TeamC-TeamK è risultato vincitore TeamC.
+	 * b. Suggerimento: dal punto di vista del grafo, occorre trovare un cammino (aperto),
+	 * di lunghezza massima, che attraversi unicamente archi con peso +1. Gli archi con peso 0 oppure -1 non
+	 *  devono essere considerati.
+	 *  c. Si noti che il cammino potrebbe non essere semplice (cioè lo stesso vertice potrebbe comparire più volte). 
+	 *  Ad esempio: A-B, B-C, C-D, D-A, A-E, E-F. In questo caso A ha vinto su B e su E, ma ha perso da D. 
+	 *  In ogni caso, ogni arco può essere utilizzato una sola volta (ad esempio, abbiamo potuto usare A-E, 
+	 *  ma non sarebbe stato lecito ripetere di nuovo A-B).
+	 *  d. Al termine della ricerca, si stampi tale cammino.
+	 *  	
+	 */
+	 						
+	public List<Team> calcolaDomino() {
+		this.bestDomino = new ArrayList<>() ;
+		this.usedEdges = new HashSet<>() ;
+		
+		List<Team> path = new ArrayList<>() ;
+			
+		for(Team initial : graph.vertexSet()) {
+			path.add(initial) ;
+			dominoRecursive(1, initial, path) ;
+			path.remove(initial) ;
+		}
+		
+		return this.bestDomino ;
+	}
+
+	private void dominoRecursive(int step, Team t1, List<Team> path) {
+				
+		// controlla se ho migliorato il cammino "best"
+		if(path.size() > this.bestDomino.size()) {
+			// aggiorna il "best"
+			this.bestDomino.clear();
+			this.bestDomino.addAll(path) ;
+			// oppure this.bestDomino = new ArrayList<>(path)
+			// ma NON this.bestDomino = path
+
+			//System.out.format("%2d %s\n", path.size(), path.toString());
+		}
+		
+		// cerca di aggiungere un nuovo vertice
+		for(DefaultWeightedEdge e: this.graph.outgoingEdgesOf(t1)) {
+			Team t2 = graph.getEdgeTarget(e) ;
+			
+			// verifico che l'arco sia relativo ad una partita vinta
+			// e che non sia ancora stato utilizzato
+			if(graph.getEdgeWeight(e) == +1 && !this.usedEdges.contains(e)) {
+				// provo ad attraversare l'arco
+				path.add(t2) ;
+				usedEdges.add(e) ;
+				dominoRecursive(step+1, t2, path);
+				usedEdges.remove(e) ;
+				path.remove(path.size()-1) ; // togli l'ultimo aggiunto
+				// Attenzione: path.remove(t2) ; non funziona perché t2 può comparire più di una volta
+			}
+		}
+	}					
+						
+						
+						

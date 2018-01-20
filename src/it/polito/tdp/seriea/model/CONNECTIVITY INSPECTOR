@@ -7,7 +7,8 @@
 4) trovo (max) degli aereoporti connessi
 5) trovo (max size) aereoporti connessi
 6) trovo 5 achi con peso minimo di (max size)
-
+6)Permettere all’utente di selezionare, da un menu a tendina, una delle squadre presenti nel grafo,
+	e premere il bottone “Connessioni Squadra”.
 ------------------------------------
 
 	private ConnectivityInspector<Airport,DefaultWeightedEdge> ci; 
@@ -76,8 +77,13 @@
  		 return edgePeso.subList(0, 5);
  	    }
  	    
- 	
- 	
+// Permettere all’utente di selezionare, da un menu a tendina, una delle squadre presenti nel grafo,  
+// e premere il bottone “Connessioni Squadra”.
+   	
+		public Set<Team> getConn(String name){	
+	 		ConnectivityInspector<Team,DefaultWeightedEdge> ci = new ConnectivityInspector<>(this.graphTEAM);
+			return ci.connectedSetOf(mapTeam.get(name));
+		}
  	
  	    
 			

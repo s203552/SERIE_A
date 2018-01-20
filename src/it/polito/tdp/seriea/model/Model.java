@@ -39,16 +39,29 @@ import it.polito.tdp.seriea.db.SerieADAO;
 public class Model {
 	
 	private SerieADAO dao;
+	
 	private List<Season> seasons;
+	private List<Integer> anni;
+	private Map<Integer,Season> mapSeason;
+	
 	private List<Match> matches;
-	private List<Team> teams;
-	private Map<String,Team> mapTeam;
+	private List<Match> matchesBySeason;
 	private Map<Integer,Match> mapMatch;
+	private Map<Integer,Match> mapMatchBySeason;
+	
+	private List<Team> teams;
+	private List<Team> teamsBySeason;
+	private Map<String,Team> mapTeam;
+	private Map<String,Team> mapTeamBySeason;
+
 	
 	//grafo Orientato e Pesato
 	private DefaultDirectedWeightedGraph<Team,DefaultWeightedEdge> graph;
 	//grafo NON Orientato e Pesato
-	private SimpleWeightedGraph<Team,DefaultWeightedEdge> graph2;
+	private SimpleWeightedGraph<Team,DefaultWeightedEdge> graphTEAM;
+	private SimpleWeightedGraph<Integer,DefaultWeightedEdge> graphSeason;
+	private SimpleWeightedGraph<Integer,DefaultWeightedEdge> graphGOAL;
+
 	
 	
 	//Visite
@@ -56,69 +69,76 @@ public class Model {
 
 	
 //DEVO CREARE IL COSTRUTTORE DEL MODEL CON ALL'INTERNO IL DAO
-	public Model() {
-		super();
-		dao=new SerieADAO();	
-
-	}
+		public Model() {
+			super();
+			dao=new SerieADAO();	
 	
+		}
+//GET LISTA ANNI
+		public List<Integer>getYears(){
+			if(anni==null){ 		anni=dao.getYears();}
+			return anni;
+		}
 //GET LISTA SEASON	
-	public List<Season>getSeasons(){
-		if(seasons==null){ 
-			seasons=dao.listSeasons();}
-		return seasons;
-	}
+		public List<Season>getSeasons(){
+			if(seasons==null){ 		seasons=dao.listSeasons();}
+			this.mapSeason=new HashMap<>();
+			for(Season atemp:seasons){			this.mapSeason.put(atemp.getSeason(), atemp);		}
+			return seasons;
+		}
 //GET LISTA NUMERO GOAL	
-	public List<Integer> getTotGOAL () {
-		return dao.getTotGOAL();
-	}	
-//GET LISTA MATCH	
-	public List<Match> getAllMatches(Season stagione){
-		if(matches==null)	
-			matches= dao.getMatchesForSeason(stagione,mapTeam);
-		
-		return matches;
-	}
+		public List<Integer> getTotGOAL () {
+			return dao.getTotGOAL();
+		}	
+
 //GET LISTA TEAM CON CONTROLLO MAP	
-	public List<Team>  getAllTeams() { 
-		if(teams==null)	
-			teams=dao.listTeams(); //LIST	
-		return teams;
-	}
-//GET LISTA TEAM CON CONTROLLO MAP	
-		public List<Team>  getAllTeamsBySeason(Season s) { 
-			if(teams==null)	
-				teams=dao.listTeamsforSeason(s); //LIST	
+		public List<Team>  getAllTeams() { 
+			if(teams==null)			teams=dao.listTeams(); //LIST	
 			this.mapTeam=new HashMap<>();
-			for(Team atemp:teams){
-				this.mapTeam.put(atemp.getTeam(), atemp);
-			}
+			for(Team atemp:teams){			this.mapTeam.put(atemp.getTeam(), atemp);		}
 			return teams;
 		}
-	
+//GET LISTA TEAM BY SEASON CON CONTROLLO MAP	
+		public List<Team>  getAllTeamsBySeason(Season s) { 
+			if(teamsBySeason==null)		teamsBySeason=dao.listTeamsforSeason(s); //LIST	
+			this.mapTeamBySeason=new HashMap<>();
+			for(Team atemp:teamsBySeason){ this.mapTeamBySeason.put(atemp.getTeam(), atemp);}
+			return teamsBySeason;
+		}
+//GET LISTA MATCH 
+		public List<Match> getAllMatches(){
+			if(matches==null)	matches= dao.getAllMatches(mapTeam, mapSeason);
+			this.mapMatch=new HashMap<>();
+			for(Match atemp:matches){ this.mapMatch.put(atemp.getId(), atemp);}
+			return matches;
+				}	
 
-	
-//GRAFI
-	public void creaGrafo(Season season) {
-		
-		String s="";
-		if (graph==null)graph=new DefaultDirectedWeightedGraph<Team,DefaultWeightedEdge>(DefaultWeightedEdge.class);
+//GET LISTA MATCH BY SEASON
+		public List<Match> getAllMatchesBySeason(Season stagione){
+			if(matchesBySeason==null)		matchesBySeason= dao.getMatchesForSeason(stagione,mapTeam);
+			this.mapMatchBySeason=new HashMap<>();
+			for(Match atemp:matchesBySeason){ this.mapMatchBySeason.put(atemp.getId(), atemp);}
+			return matchesBySeason;
+				}
 				
+// ------------------------------------GRAFI----------------------------------------
+
+		
+	public void creaGrafo(Season season) {
+		String s="";
+		if (graph==null)graph=new DefaultDirectedWeightedGraph<Team,DefaultWeightedEdge>(DefaultWeightedEdge.class);				
 		//aggiungi vertici
 		Graphs.addAllVertices(graph, this.getAllTeamsBySeason(season));
-		Map<String,Team> mapteam =dao.MapTeamsForSeason(season);
-
+		Map<Integer,Season>mapSEASON= dao.MapSeasons();
+		Map<String,Team>mapTEAM=dao.MapTeamsForSeason(season);
 		System.out.println("Grafo creato: " + graph.vertexSet().size() + " nodi");	
-
-		long time0 = System.nanoTime() ;
-		
+		long time0 = System.nanoTime() ;		
 		//aggiungi archi
 		//for(Match mtemp: this.getAllMatches(season)){
-			for(Match mtemp:dao.getMatchesForSeason(season, mapTeam)){	
+			for(Match mtemp:dao.getMatchesForSeason(season, mapTeamBySeason)){	
 				Team home=mtemp.getHomeTeam();
 				Team away=mtemp.getAwayTeam();
-				if(home!=null && away!=null && !home.equals(away) ){
-			
+				if(home!=null && away!=null && !home.equals(away) ){			
 					//CALCOLO PESO: Il peso dell’arco tra TeamA e TeamB deve valere +1 
 					//se TeamA ha battuto TeamB, 0 se hanno pareggiato, -1 se TeamA ha perso.
 					int peso;
@@ -126,32 +146,23 @@ public class Model {
 					if(ris.compareTo("H")==0)  			{   peso=1;} //HOME WIN
 					else  { if(ris.compareTo("A")==0) 		peso=-1; //AWAY WIN
 						else  								peso=0;  //DRAW
-					}
-					
-					
+					}				
 					//CALCOLO PESO DIFFERENZA RETI 
-					Integer peso3=  dao.diffRETI(home,away, season, mapTeam);
-					
+					Integer peso3=  dao.diffRETI(home,away, season, mapTeamBySeason);
 					//IMPOSTO ARCHI
 					DefaultWeightedEdge e1 = graph.addEdge(home,away);
-					if(peso3>0)
-					graph.setEdgeWeight(e1,peso3 );
-					
-					s+= home+" "+ away+" "+ peso3 +"\n";
-					
+					graph.setEdgeWeight(e1,peso3 );				
+					s+= home+" "+ away+" "+ peso3 +"\n";					
 				}
 			}
-		long time1 = System.nanoTime() ;
-		
+		long time1 = System.nanoTime() ;	
 		//Per eliminare vertici non connessi
 		Set<Team> elimina=new HashSet<Team>();
 		for(Team ttemp: graph.vertexSet()){
 			if(Graphs.neighborListOf(graph, ttemp).size()==0)
-				elimina.add(ttemp);
-		}
+				elimina.add(ttemp);		}
 		graph.removeAllVertices(elimina);
-		
-		
+			
 		System.out.println("Grafo creato: " + graph.vertexSet().size() + " nodi, " + graph.edgeSet().size() + " archi");	
 		System.out.println("Tempo esecuzione grafo: " + (time1-time0)/1000000 + "  MilliSecondi");
 		System.out.println(s);
@@ -163,21 +174,18 @@ public class Model {
  public void creaGrafo2(Season season){	
 	String s="";
 	graph= new DefaultDirectedWeightedGraph<Team,DefaultWeightedEdge>(DefaultWeightedEdge.class);
-	Map<String,Team> team =dao.MapTeamsForSeason(season);
-	
 	Graphs.addAllVertices(graph, this.getAllTeamsBySeason(season));
-//	System.out.println("\n"+graph.vertexSet().toString()+"\n");
-	
+	Map<Integer,Season>mapSEASON= dao.MapSeasons();
+	Map<String,Team>mapTEAM=dao.MapTeamsForSeason(season);
 	for (Team t : graph.vertexSet()){
-		List<Coppie> co = dao.getPartiteConPunteggio(t, team, season);
+		List<CoppieTeam> co = dao.getPartiteConPunteggio(t, mapTeamBySeason, season);
 		 if(co!=null){
-			 for(Coppie c : co){
+			 for(CoppieTeam c : co){
 				 double peso=c.getGoalfatti()-c.getGoalsubiti();
 				DefaultWeightedEdge de =graph.addEdge(c.getHome(), c.getAway());
 				graph.setEdgeWeight(de, peso);
 				s+= de +" "+ peso+"\n";
-				}			 
-		 }
+				} }
 	}
 	System.out.println("Grafo creato: " + graph.vertexSet().size() + " nodi, " + graph.edgeSet().size() + " archi");	
 	System.out.println(s);
@@ -195,20 +203,18 @@ public class Model {
 				if(peso==0)		punteggio++;
 			  }
 			sq.add(new TeamPunteggio(t,punteggio));			
-		}
-		
+		}		
 		//ORDINO IN BASE AL PUNTEGGIO (crescente)
 		sq.sort(new Comparator<TeamPunteggio>() {
-			@Override
-			public int compare(TeamPunteggio o1, TeamPunteggio o2) {
-				return Double.compare(o1.getPunteggio(), o2.getPunteggio());
+			@Override		public int compare(TeamPunteggio o1, TeamPunteggio o2) {
+							return Double.compare(o1.getPunteggio(), o2.getPunteggio());
 			}
 		});
 		return sq;
 	}
  
-
-
+	
+	
  /** --------------------------------test model	---------------------------------------------------	*/		
 	
 	public static void main(String[] args) {
@@ -218,16 +224,37 @@ public class Model {
 			Team team=new Team("Genoa");
 			Team team2=new Team("Sampdoria");
 			
-			model.creaGrafo(s) ;
+//			model.creaGrafo(s) ;
 //			model.creaGrafo2(s) ;
 			
+//			System.out.println("---------------GRAFO TEAM----------------------");
 
-//			System.out.println("-------------VISITE----------------------");			
+//			model.creaGrafoTEAM() ;
+//			List<Team> te= model.getRaggiungibiliInAmpiezza(team);
+//			System.out.println(te);
+//			List<TeamPunteggio> t= model.getDestinations(team);		
+//			System.out.println(t);
+			
+//			System.out.println("---------------GRAFO Season----------------------");
+//			model.creaGrafoSEASON() ;
+//			List<Integer> ss= model.getRaggiungibiliInAmpiezza(2016);
+//			System.out.println(ss);
+//			List<IntegerPair> ips= model.getDestinations(2016);		
+//			System.out.println(ips);
+			
+//			System.out.println("-----------------GRAFO GOAL----------------------");
+//			model.creaGrafoGOAL() ;
+//			List<Integer> te= model.getRaggiungibiliInAmpiezza(3);
+//			System.out.println(te);
+//			List<IntegerPair> t= model.getDestinations(3);		
+//			System.out.println(t);
+
+//			System.out.println("---------------------VISITE----------------------");			
 //			
 //			System.out.println("\n");
-//			List<TeamPunteggio> t= model.getDestinations(s, team);
-//		
+//			List<TeamPunteggio> t= model.getDestinations(s, team);		
 //			System.out.println(t);
+				
 //			System.out.println(" \n----- successori------ \n");
 //			List<Team> ss= model.trovaSucessori(team);
 //			System.out.println(ss);

@@ -1,0 +1,87 @@
+ 
+ /** ESAME 1
+  *  Alla pressione del bottone, creare un grafo che rappresenti le partite giocate da ogni coppia di squadre, in tutte le stagioni disponibili.
+  *  Il grafo dovrà essere non orientato e pesato, con i vertici che rappresentino le squadre che hanno giocato in almeno una stagione, 
+  *  e gli archi il fatto  che tali squadre abbiano giocato insieme almeno una volta. 
+  *  Il peso dell’arco tra due team deve rappresentare il numero di partite che quelle due squadre hanno giocato 
+  *  (contando sia le partite di andata che di ritorno, in ogni stagione).
+  *  
+  *  Permettere all’utente di selezionare, da un menu a tendina, una delle squadre presenti nel grafo, 
+  *  e premere il bottone “Connessioni Squadra”.
+  *  
+  *  Per la squadra selezionata nel menu a tendina, stampare l’elenco delle squadre con cui ha giocato (ed il numero di partite giocate), 
+  *  in ordine decrescente di numero di partite.
+  */
+
+	public void creaGrafoTEAM() {
+		String s="";
+		if (graphTEAM==null) graphTEAM=new SimpleWeightedGraph<Team,DefaultWeightedEdge>(DefaultWeightedEdge.class);	
+		
+		Graphs.addAllVertices(graphTEAM, this.getAllTeams());//aggiungi vertici
+		System.out.println("Grafo creato: " + graphTEAM.vertexSet().size() + " nodi");	
+		Map<Integer,Season>mapSEASON= dao.MapSeasons();
+		Map<String,Team>mapTEAM= dao.MapTeams();
+		//aggiungi archi
+			for(Match mtemp: dao.getAllMatches(mapTeam, mapSEASON)){	
+				Team home=mtemp.getHomeTeam();
+				Team away=mtemp.getAwayTeam();
+				if(home!=null && away!=null && !home.equals(away) ){
+					//CALCOLO PESO n partite giocate 
+					Integer peso=  dao.nPartiteGiocateContro(home, away, mapTeam);	
+					//IMPOSTO ARCHI
+					Graphs.addEdgeWithVertices(graphTEAM, home,away, peso);
+					s+= home+" "+ away+" "+ peso +"\n";	
+					}			
+		}	
+	System.out.println("Grafo creato: " + graphTEAM.vertexSet().size() + " nodi, " + graphTEAM.edgeSet().size() + " archi");	
+			System.out.println(s);
+} 
+	
+ 
+	
+	public List<Team> getRaggiungibiliInAmpiezza(Team partenza){	
+		List<Team> vicini = new ArrayList<Team>();
+		BreadthFirstIterator<Team, DefaultWeightedEdge> visita = 
+					new BreadthFirstIterator<Team, DefaultWeightedEdge>( this.graphTEAM, partenza);		
+			while(visita.hasNext()) //Finchè ogni nodo ha un successore
+			{
+				Team s = visita.next(); //Prendo il successore
+				vicini.add(s); //e lo metto nella lista
+			}
+			return vicini;
+		}
+	 
+	public List<TeamPunteggio> getDestinations( Team start) {
+		
+			List<TeamPunteggio> list = new ArrayList<>();
+			for (Team end : this.getAllTeams()) {
+				DijkstraShortestPath<Team, DefaultWeightedEdge> dsp = new DijkstraShortestPath<>(graphTEAM, start, end);
+				GraphPath<Team, DefaultWeightedEdge> p = dsp.getPath();
+				if (p != null) {
+				// p.getEdgeList().size() è il numero di partite da aggiungere dopo p.getWeight() e aggiungi un int nella classe
+					list.add(new TeamPunteggio(end, (int) p.getWeight()));    
+				}
+			}
+			//ordinato per punti crescente  rispetto al team di partenza
+			list.sort(new Comparator<TeamPunteggio>() {
+				@Override
+				public int compare(TeamPunteggio o1, TeamPunteggio o2) {
+					return -Double.compare(o1.getPunteggio(), o2.getPunteggio());
+				}
+			});
+		return list;
+		}
+
+
+
+ /** --------------------------------test model	---------------------------------------------------	*/		
+
+		
+//			System.out.println("---------------GRAFO TEAM----------------------");
+
+		
+//			model.creaGrafoTEAM() ;
+//			List<Team> te= model.getRaggiungibiliInAmpiezza(team);
+//			System.out.println(te);
+//			List<TeamPunteggio> t= model.getDestinations(team);		
+//			System.out.println(t);

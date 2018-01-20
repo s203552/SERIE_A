@@ -10,7 +10,6 @@ public class Season {
 	}
 	
 	public Season(int season) {
-		super();
 		this.season = season;
 	}
 
@@ -60,7 +59,7 @@ public class Season {
 	 */
 	@Override
 	public String toString() {
-		return description;
+		return season+" ";
 	}
 	
 	
