@@ -18,39 +18,6 @@ public class Esame {
 	
 	Model model;
 	
-	Se ci sono delle comboBox assicurati di averle inizializzate. 
-	Esempi:
-	private ChoiceBox<Season> boxSeason;
-	private ChoiceBox<Team> boxTeam;
-	
-	___________________________________Nel metodo collegato al bottone:
-	txtResult.claer();
-	
-	Se l'inserimento delle variabili � mediante ComboBox:
-	
-	Team team= this.boxTeam.getValue();
-    	if (team == null) { 	
-    	txtResult.setText("Errore: selezionare la squadra\n");
-    	return;
-    	}    
-    	
-    Season season= this.boxSeason.getValue();
-    	if (season == null) {     
-    	txtResult.setText("Errore: selezionare la stagione\n");
-    	return;
-    	} 
-    	
-    Se chiedo delle liste al model, controllo che non siano vuote. Esempio:
-    List<Team> teamOnlyWin = model.getTeamsOnlyWin();
-           if (teamOnlyWin = null) {
-           txtResult.setText("Non ci sono squadre che hanno sempre vinto!");
-           }
-    txtResult.setText("Le squadre che hanno sempre solo vinto sono: \n");
-    for(Team t : teamOnlyWin){
-        txtResult.appendText(t.toString() + "\n");
-    }
-	____________________________________________________________________
-	
 	_______________________________________________
 	SET MODEL :
 	

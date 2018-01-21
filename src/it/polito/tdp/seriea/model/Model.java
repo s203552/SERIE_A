@@ -241,10 +241,11 @@ public class Model {
 // se chiede chi va in champions   						 return sq.subList(0, 3);
 
 	 
+	 
+	 
+	 
+	 
 
-
-	
-	
  /** --------------------------------test model	---------------------------------------------------	*/		
 	
 	public static void main(String[] args) {

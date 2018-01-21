@@ -46,7 +46,6 @@ public class SerieADAO {
 	
 		}
 	}	
-
 	public List<Integer> getYears () {
 		String sql = "SELECT Distinct season FROM matches";
 				
@@ -93,7 +92,6 @@ public class SerieADAO {
 			return null ;
 		}
 	}
-
 	public List<Season> listSeasons() {
 				String sql = "SELECT Distinct season FROM seasons" ;
 				
@@ -140,7 +138,6 @@ public class SerieADAO {
 			return null ;
 		}
 	}
-	
 	public List<Team> listTeams() {
 		String sql = "SELECT team FROM teams" ;
 		List<Team> teams = new ArrayList<>() ;
@@ -187,7 +184,6 @@ public class SerieADAO {
 			return null ;
 		}
 	}
-
 	public List<Team> listTeamsforSeason(Season s) {
 		String sql = "SELECT DISTINCT HomeTeam FROM matches Where season=?" ;	
 		List<Team> teamForSeason = new ArrayList<>() ;
@@ -242,6 +238,10 @@ public class SerieADAO {
 		}
 	}
 
+	
+//---------------------------------------------------------
+	
+	
 	/**
 	 * @return lista partite giocate in una stagione da @param Team,Season
 	 * @param mapSquadre mappa delle squadre  */
@@ -474,9 +474,7 @@ public class SerieADAO {
 	
 	/**------------------------------------PESO GRAFOGOAL----------------------------------------------*/
 	
-	/**	
-	 * @return partite giocate finite con quel risultato
-	 */
+	/*	 @return partite giocate finite con quel risultato dando goal cas e goal trasferta */
 	public Integer nPartiteFiniteXaY(Integer i,Integer i2) {
 		
 		String sql = "SELECT  m.FTHG, m.FTAG, count(*) AS dr FROM matches m WHERE  m.`FTHG`=? AND m.`FTAG`=? group by m.`FTHG`, m.`FTAG` ";	
@@ -500,7 +498,6 @@ public class SerieADAO {
 	
 		}
 	}	
-	
 	public Integer nPartiteFiniteXaY_InSTAGIONE(Integer i,Integer i2,Season s) {
 		
 		String sql = "SELECT  season,m.FTHG, m.FTAG, count(*) AS dr FROM matches m WHERE  m.`FTHG`=3 AND m.`FTAG`=1 AND season= 2017 GROUP BY m.`FTHG`, m.`FTAG`,season";	
@@ -643,7 +640,6 @@ public class SerieADAO {
 	}	
 	
 	
-	
 	/**---------------------------------------PESO GRAFOSEASON-------------------------------------------*/
 	
 	/* @return numero squadre  nelle due stagioni	 */
@@ -678,7 +674,6 @@ public class SerieADAO {
 		}
 	
 	}
-
 	/* @return  GOAL  tot, diff, casa, trasferta nelle due stagioni	 */
 	public Integer GoalTotali2Stagioni(Integer s,Integer s1) {
 		//TOTALI in 2 stagioni
@@ -719,10 +714,8 @@ public class SerieADAO {
 	//SELECT season,sum(fthg+ftag) FROM matches m WHERE Season=?  GROUP BY season
 
 
-//-------------------------------------main----------------------------------------------
+/**-------------------------------------MAIN----------------------------------------------*/
 		
-	
-
 	public static void main(String[] args) {
 		
 		SerieADAO dao = new SerieADAO() ;		
