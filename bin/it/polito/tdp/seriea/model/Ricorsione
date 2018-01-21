@@ -1,6 +1,7 @@
 
 /**
- * RICORSIONE 1  ------->  GET OTTIMO Airport di tutti le rotte
+ * RICORSIONE 1  ------->  GET OTTIMO Team di tutti le partite
+ *---------------------------------------------------------------------
  */
 		
 	//GET OTTIMO di tutti le gare
@@ -47,7 +48,7 @@
 			
 /**
 --------------------------------------------------------------
- * RICORSIONE 3
+ * RICORSIONE 2
 */	
 					private List<Team> best;
 					private List<DefaultWeightedEdge> bestArchi;
@@ -89,7 +90,7 @@
 						}
 						
 /**
-	 * RICORSIONE 4 
+	 * RICORSIONE 3 ---->DOMINO
 	 * -------------------------------------------------------------------------
 	 * a. Quando l’utente seleziona la funzione “Domino”, occorre ricercare e stampare la più lunga sequenza di partite 
 	 * “concatenate”, in cui ciascuna squadra sconfitta in una partita diviene vincitrice nella partita successiva. 
@@ -105,54 +106,6 @@
 	 *  d. Al termine della ricerca, si stampi tale cammino.
 	 *  	
 	 */
-	 						
-	public List<Team> calcolaDomino() {
-		this.bestDomino = new ArrayList<>() ;
-		this.usedEdges = new HashSet<>() ;
-		
-		List<Team> path = new ArrayList<>() ;
-			
-		for(Team initial : graph.vertexSet()) {
-			path.add(initial) ;
-			dominoRecursive(1, initial, path) ;
-			path.remove(initial) ;
-		}
-		
-		return this.bestDomino ;
-	}
-
-	private void dominoRecursive(int step, Team t1, List<Team> path) {
-				
-		// controlla se ho migliorato il cammino "best"
-		if(path.size() > this.bestDomino.size()) {
-			// aggiorna il "best"
-			this.bestDomino.clear();
-			this.bestDomino.addAll(path) ;
-			// oppure this.bestDomino = new ArrayList<>(path)
-			// ma NON this.bestDomino = path
-
-			//System.out.format("%2d %s\n", path.size(), path.toString());
-		}
-		
-		// cerca di aggiungere un nuovo vertice
-		for(DefaultWeightedEdge e: this.graph.outgoingEdgesOf(t1)) {
-			Team t2 = graph.getEdgeTarget(e) ;
-			
-			// verifico che l'arco sia relativo ad una partita vinta
-			// e che non sia ancora stato utilizzato
-			if(graph.getEdgeWeight(e) == +1 && !this.usedEdges.contains(e)) {
-				// provo ad attraversare l'arco
-				path.add(t2) ;
-				usedEdges.add(e) ;
-				dominoRecursive(step+1, t2, path);
-				usedEdges.remove(e) ;
-				path.remove(path.size()-1) ; // togli l'ultimo aggiunto
-				// Attenzione: path.remove(t2) ; non funziona perché t2 può comparire più di una volta
-			}
-		}
-	}					
-	
-//-------------------------------------------OPPURE--------------------					
 		
 				//metodo
 			private void scegli(List<DefaultWeightedEdge> parziale, int livello, List<DefaultWeightedEdge> best, Team squadra) {
@@ -184,4 +137,59 @@
 				}
 				return best;
 			}				
-						
+	
+/**
+ * RICORSIONE 4 ---> DREAM TEAM
+ * -----------------------------------------------------------------------
+ * a. Facendo click sul pulsante “DreamTeam”, individuare un dream team.
+ * b. Definiamo come team un gruppo di K squadre. La dimensione K del team viene stabilita dall’utente con
+ * l’apposita casella di testo (k).
+ * c. Il tasso di sconfitta di un team è definito come il numero totale di vittorie di una qualsiasi squadra non
+ * appartenente al team su una qualsiasi squadra appartenente al team.
+ * d. Un dream team è un team di K squadre che abbia il minimo tasso di sconfitta.
+ * Suggerimento: utilizzare un algoritmo ricorsivo per esplorare gli insiemi di K squadre.
+ * Suggerimento 2: effettuare delle prove con valori di K piccoli (1, 2 o 3).
+ */	
+	
+	
+		private List<Team> costruttori;
+		private List<Team> best;
+		private int K;
+		private int valore;
+	 
+	 public List<Team> dreamTeam(int k){
+			List<Team> parziale=new ArrayList<>();
+			best=new ArrayList<>();
+			this.K=k;
+			valore=Integer.MIN_VALUE;		
+			recursive(0,parziale);		
+			return best;	
+			}
+
+	private void recursive(int livello, List<Team> parziale) {
+			if(parziale.size()==K){
+				if(this.getValoreTeam(parziale)>valore){
+					valore=this.getValoreTeam(parziale);
+					best.clear();
+					best.addAll(parziale);	}
+				return;
+			}		
+			for(Team ctemp:graph.vertexSet()){				
+				if(parziale.isEmpty()){	
+					parziale.add(ctemp);
+					recursive(livello+1,parziale);				
+					parziale.remove(ctemp);
+				}
+			}			
+		}
+	private int getValoreTeam(List<Team> parziale) {
+			Set<Team> sconfitti=new HashSet<Team>();	
+			for(Team ctemp:parziale){
+				for(Team perdente:Graphs.successorListOf(graph, ctemp)){
+					if(!parziale.contains(perdente)){
+						sconfitti.add(perdente);
+					}
+				}
+			}		
+			return sconfitti.size();
+		}					

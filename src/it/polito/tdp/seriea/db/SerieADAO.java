@@ -386,6 +386,87 @@ public class SerieADAO {
 		}
 	}	
 
+	/**
+	 *lista partite in stagione con OVER 2,5 ---vinte in casa---vinte in trasferta----pareggiate
+	 */
+	
+	public List<Match> getPartiteOVERBySeason(Season stagione, Map<String, Team> mapSquadre) {
+		
+	  String sql = "SELECT * FROM matches WHERE matches.Season = ? " +
+	               "AND ((matches.FTHG) + (matches.FTAG)) > 2" ;
+	
+	  String sql1 = "SELECT * FROM matches WHERE matches.Season = ? AND FTR = 'A' " ;  //A = Team Away Win
+	  String sql2 = "SELECT * FROM matches WHERE matches.Season = ? AND FTR = 'D' " ; //D = Draw
+	  String sql3 = "SELECT * FROM matches WHERE matches.Season = ? AND FTR = 'H' " ; //H = Team Home Win
+
+			List<Match> matchesOVER = new ArrayList<>() ;
+			Connection conn = DBConnect.getConnection() ;
+			
+			try {
+				PreparedStatement st = conn.prepareStatement(sql) ;
+				st.setInt(1, stagione.getSeason());
+				ResultSet res = st.executeQuery() ;
+				
+				while(res.next()) {
+
+					//Costruttore completo
+					matchesOVER.add(new Match(res.getInt("match_id"), stagione, res.getString("div"), res.getDate("date").toLocalDate(), mapSquadre.get(res.getString("HomeTeam")), 
+							                mapSquadre.get(res.getString("AwayTeam")), res.getInt("fthg"),  res.getInt("ftag"), res.getString("ftr"),  res.getInt("hTHG"),  
+							                res.getInt("hTAG"), res.getString("hTR"), res.getInt("hS"),  res.getInt("aS"),  res.getInt("hST"),  res.getInt("aST"), res.getInt("hF"),  res.getInt("aF"),  
+							                res.getInt("hC"),  res.getInt("aC"),  res.getInt("hY"),  res.getInt("aY"), res.getInt("hR"),  res.getInt("aR")));
+					//Costruttore ridotto
+					/*matchesOVER.add( new Match(res.getInt("match_id"), stagione, mapSquadre.get(res.getString("HomeTeam")), 
+										  mapSquadre.get(res.getString("AwayTeam")), res.getString("Ftr")));*/
+					
+				}
+				conn.close();
+				return matchesOVER ;
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return null ;
+			}
+		}
+
+	/**
+	 *lista partite FinitiXaY_oopure_YaX
+	 */
+	public List<Match> getMatchFinitiXaY_oopure_YaX( Map<String, Team> mapSquadre,Map<Integer, Season> mapSeason,Integer i,Integer i2) {
+		
+		  String sql = "SELECT *  FROM matches m WHERE ( m.`FTHG`=? AND m.`FTAG`=?) OR ( m.`FTHG`=? AND m.`FTAG`=?)" ; //H = Team Home Win
+
+				List<Match> matchesOVER = new ArrayList<>() ;
+				Connection conn = DBConnect.getConnection() ;
+				
+				try {
+					PreparedStatement st = conn.prepareStatement(sql) ;
+					st.setInt(1, i);
+					st.setInt(2, i2);
+					st.setInt(3, i2);
+					st.setInt(4, i);
+					
+					ResultSet res = st.executeQuery() ;
+					
+					while(res.next()) {
+
+						//Costruttore completo
+						matchesOVER.add(new Match(res.getInt("match_id"), mapSeason.get(res.getInt("season")), res.getString("div"), res.getDate("date").toLocalDate(), mapSquadre.get(res.getString("HomeTeam")), 
+								                mapSquadre.get(res.getString("AwayTeam")), res.getInt("fthg"),  res.getInt("ftag"), res.getString("ftr"),  res.getInt("hTHG"),  
+								                res.getInt("hTAG"), res.getString("hTR"), res.getInt("hS"),  res.getInt("aS"),  res.getInt("hST"),  res.getInt("aST"), res.getInt("hF"),  res.getInt("aF"),  
+								                res.getInt("hC"),  res.getInt("aC"),  res.getInt("hY"),  res.getInt("aY"), res.getInt("hR"),  res.getInt("aR")));
+						//Costruttore ridotto
+						/*matchesOVER.add( new Match(res.getInt("match_id"), stagione, mapSquadre.get(res.getString("HomeTeam")), 
+											  mapSquadre.get(res.getString("AwayTeam")), res.getString("Ftr")));*/
+						
+					}
+					conn.close();
+					return matchesOVER ;
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					return null ;
+				}
+			}
 	
 /**-------------------------------------------PESI GRAFICI ESAMI---------------------------------------*/
 /**----------------------------------------------------------------------------------*/
@@ -445,7 +526,6 @@ public class SerieADAO {
 		}
 	}	
 
-	
 	
 	/**-------------------------------------PESO GRAFOTEAM---------------------------------------------*/
 		
@@ -521,10 +601,7 @@ public class SerieADAO {
 	}	
 
 	/**	
-	 *  DATA LA STAGIONE
-	 * 
-	 * 
-	 * 
+	 *  DATA LA STAGIONE 
 	 * @return diff reti----->Goal in casa----->Goal in trasferta---->tot goal
 	 */
 	public Integer diffRETI(Team  a,Team  a1,Season s,Map<String,Team> teams) {
@@ -637,17 +714,9 @@ public class SerieADAO {
 		}
 	}	
 
-
-
-
-
-
+	
+	
 	//SELECT season,sum(fthg+ftag) FROM matches m WHERE Season=?  GROUP BY season
-
-
-
-
-
 
 
 //-------------------------------------main----------------------------------------------

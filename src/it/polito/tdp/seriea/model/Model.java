@@ -165,6 +165,9 @@ public class Model {
 					//CALCOLO PESO: Il peso dell’arco tra TeamA e TeamB deve valere +1 
 					//se TeamA ha battuto TeamB, 0 se hanno pareggiato, -1 se TeamA ha perso.
 					int peso;
+					//per risultato primo tempo
+					String risPT=mtemp.getHTR();
+					//per risultato finale
 					String ris=mtemp.getFtr();
 					if(ris.compareTo("H")==0)  			{   peso=1;} //HOME WIN
 					else  { if(ris.compareTo("A")==0) 		peso=-1; //AWAY WIN
@@ -194,47 +197,36 @@ public class Model {
 		System.out.println(s);
 	}
 
-//Creo grafo in cui vertici squadre e archi diretti(homeaway) e pesati col numero di gol fatti dalla hometeam
-// Alternativa con peso differenza fra i due 
- 
- public void creaGrafo2(Season season){	
-	String s="";
-	graph= new DefaultDirectedWeightedGraph<Team,DefaultWeightedEdge>(DefaultWeightedEdge.class);
-	Graphs.addAllVertices(graph, this.getAllTeamsBySeason(season));
-	Map<Integer,Season>mapSEASON= dao.MapSeasons();
-	Map<String,Team>mapTEAM=dao.MapTeamsForSeason(season);
-	for (Team t : graph.vertexSet()){
-		List<CoppieTeam> co = dao.getPartiteConPunteggio(t, mapTeamBySeason, season);
-		 if(co!=null){
-			 for(CoppieTeam c : co){
-				 double peso=c.getGoalfatti()-c.getGoalsubiti();
-				DefaultWeightedEdge de =graph.addEdge(c.getHome(), c.getAway());
-				graph.setEdgeWeight(de, peso);
-				s+= de +" "+ peso+"\n";
-				} }
-	}
-	System.out.println("Grafo creato: " + graph.vertexSet().size() + " nodi, " + graph.edgeSet().size() + " archi");	
-	System.out.println(s);
-}
- 
+
  //VICINI CONNESSI
 	 public List<Team> trovaViciniConnessi(Team s,Season season) {	
 			List<Team> connessi = new ArrayList<Team>();
 			 connessi.addAll(Graphs.neighborListOf(graph,s));				
 			return  connessi;
 		}
-
- // CLASSIFICA	
-	 public List<TeamPunteggio> getClassifica(Season season){
+	 
+// CLASSIFICA	
+	 public List<TeamPunteggio> getClassifica(Season s){
 		List<TeamPunteggio> sq= new ArrayList<TeamPunteggio>();
 		for(Team t : graph.vertexSet()){
-			int punteggio=0;
-			for(DefaultWeightedEdge de : graph.outgoingEdgesOf(t)){ 		//ARCHI USCENTI graph.outgoingEdgesOf
-				int peso = (int)graph.getEdgeWeight(de);
-				if(peso== 1)	punteggio+=3;
-				if(peso==0)		punteggio++;
-			  }
-			sq.add(new TeamPunteggio(t,punteggio));			
+			t.setPunti(0);
+			for (DefaultWeightedEdge e : graph.edgeSet()) {
+				Team home = graph.getEdgeSource(e);
+				Team away = graph.getEdgeTarget(e);
+				switch ((int) graph.getEdgeWeight(e)) {
+							//in caso di vittoria home team
+							case +1: home.setPunti(home.getPunti() + 3);
+											break;
+							//in caso di vittoria away team
+							case -1: away.setPunti(away.getPunti() + 3);
+											break;
+							//in caso di pareggio
+							case 0:	 home.setPunti(home.getPunti() + 1);
+								   	 away.setPunti(away.getPunti() + 1);
+											break;
+				}
+			}
+			sq.add(new TeamPunteggio(t,t.getPunti()));		//punteggio=t.getPunti();
 		}		
 		//ORDINO IN BASE AL PUNTEGGIO (crescente)
 		sq.sort(new Comparator<TeamPunteggio>() {
@@ -245,7 +237,13 @@ public class Model {
 		return sq;
 	}
  
+// se chiede chi retrocede e con quanti punti    		 return sq.subList(17, 20);
+// se chiede chi va in champions   						 return sq.subList(0, 3);
 
+	 
+
+
+	
 	
  /** --------------------------------test model	---------------------------------------------------	*/		
 	
@@ -260,9 +258,13 @@ public class Model {
 //			model.creaGrafo2(s) ;
 			List<Team> vc= model.trovaViciniConnessi(team,s);		
 			System.out.println(vc);
-			System.out.println("\n");	
+			System.out.println("\n");
 			List<TeamPunteggio> classifica= model.getClassifica(s);		
 			System.out.println(classifica);
+			System.out.println(" \n ---CHI RETROCEDE?--- \n");
+			System.out.println(classifica.subList(17, 20));
+			System.out.println(" \n ---CHI Va in Champions?--- \n");
+			System.out.println(classifica.subList(0, 3));
 			
 			
 			

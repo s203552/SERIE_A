@@ -2,7 +2,8 @@ package it.polito.tdp.seriea.model;
 
 public class Team {
 	private String team ;
-
+	private int punti ;
+	
 	public Team(String team) {
 		super();
 		this.team = team;
@@ -36,6 +37,13 @@ public class Team {
 		} else if (!team.equals(other.team))
 			return false;
 		return true;
+	}
+	public int getPunti() {
+		return punti;
+	}
+
+	public void setPunti(int punti) {
+		this.punti = punti;
 	}
 
 }
